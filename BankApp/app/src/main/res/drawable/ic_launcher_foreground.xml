@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Bank building icon -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,20 L20,35 L20,40 L25,40 L25,75 L20,75 L20,85 L88,85 L88,75 L83,75 L83,40 L88,40 L88,35 Z"/>
+    
+    <!-- Roof triangle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,15 L15,35 L93,35 Z"/>
+    
+    <!-- Columns -->
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M30,40 L30,75 M42,40 L42,75 M54,40 L54,75 M66,40 L66,75 M78,40 L78,75"/>
+    
+    <!-- Door -->
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M45,60 L45,75 L63,75 L63,60 Z"/>
+</vector>
