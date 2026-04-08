@@ -6,12 +6,25 @@
 *.war
 *.apk
 *.aab
+# Android build artifacts
+*.apk
+*.aar
+*.dex
+
+# Android build directories
+build/
+.externalNativeBuild/
+.intermediates/
+.profile/
+captures/
+migrated-local.properties
 
 # Build directories
 build/
 .gradle/
 .externalNativeBuild/
 .cxx/
+!gradle/wrapper/gradle-wrapper.properties
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -37,4 +50,20 @@ captures/
 
 # ProGuard rule file (if regenerated)
 proguard-rules.pro
+
+# IntelliJ IDEA artifacts
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Temporary folders for code coverage testing
+coverage/
+*.ec
+
+# Proguard rule files
+proguard-rules.pro
+
+# Build cache
+.cache/
 ```

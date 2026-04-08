@@ -13,6 +13,8 @@ import com.example.bankapp.ui.screens.HomeScreen
 import com.example.bankapp.ui.screens.auth.TwoFactorAuthScreen
 import com.example.bankapp.ui.screens.family.FamilyScreen
 import com.example.bankapp.ui.screens.help.HelpScreen
+import androidx.compose.ui.Modifier
+import com.example.bankapp.ui.screens.HomeScreen
 import com.example.bankapp.ui.theme.BankAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -103,6 +105,12 @@ fun ProfileScreen() {
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+                    HomeScreen()
+                }
+            }
         }
     }
 }
