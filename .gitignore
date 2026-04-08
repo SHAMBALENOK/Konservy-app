@@ -1,4 +1,11 @@
 ```
+# Kotlin/Android build artifacts
+*.class
+*.dex
+*.jar
+*.war
+*.apk
+*.aab
 # Android build artifacts
 *.apk
 *.aar
@@ -12,21 +19,37 @@ build/
 captures/
 migrated-local.properties
 
-# Gradle
+# Build directories
+build/
 .gradle/
+.externalNativeBuild/
+.cxx/
 !gradle/wrapper/gradle-wrapper.properties
 
 # Local configuration file (sdk path, etc)
 local.properties
-
-# Log Files
-*.log
 
 # Android Studio Navigation editor temp files
 .navigation/
 
 # Android Studio captures folder
 captures/
+
+# IntelliJ IDEA artifacts
+*.iml
+*.iws
+*.idea/
+
+# Gradle
+.gradle/
+!gradle/wrapper/
+
+# Temporary folders for code coverage testing
+*.gcda
+*.gcno
+
+# ProGuard rule file (if regenerated)
+proguard-rules.pro
 
 # IntelliJ IDEA artifacts
 *.iml
