@@ -3,18 +3,34 @@ package com.example.bankapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.example.bankapp.data.repository.FamilyRepository
 import com.example.bankapp.ui.screens.HomeScreen
 import com.example.bankapp.ui.screens.auth.TwoFactorAuthScreen
 import com.example.bankapp.ui.screens.family.FamilyScreen
 import com.example.bankapp.ui.screens.help.HelpScreen
-import androidx.compose.ui.Modifier
-import com.example.bankapp.ui.screens.HomeScreen
 import com.example.bankapp.ui.theme.BankAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,7 +50,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun BankApp() {
+fun bankApp() {
     var isAuthenticated by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(0) }
     
@@ -46,7 +62,7 @@ fun BankApp() {
             onAuthFailure = { /* Обработка ошибки */ }
         )
     } else {
-        MainNavigation(
+        mainNavigation(
             selectedTab = selectedTab,
             onTabSelected = { selectedTab = it },
             repository = repository
@@ -55,7 +71,7 @@ fun BankApp() {
 }
 
 @Composable
-fun MainNavigation(
+fun mainNavigation(
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
     repository: FamilyRepository
@@ -64,53 +80,46 @@ fun MainNavigation(
         0 -> HomeScreen()
         1 -> FamilyScreen(repository = repository)
         2 -> HelpScreen()
-        3 -> ProfileScreen()
+        3 -> profileScreen()
     }
 }
 
-@androidx.compose.runtime.Composable
-fun ProfileScreen() {
-    // Заглушка для экрана профиля
-    androidx.compose.material3.Scaffold(
+@Composable
+fun profileScreen() {
+    Scaffold(
         topBar = {
-            androidx.compose.material3.TopAppBar(
-                title = { androidx.compose.material3.Text("Профиль") },
-                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+            TopAppBar(
+                title = { Text("Профиль") },
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
     ) { paddingValues ->
-        androidx.compose.foundation.layout.Column(
-            modifier = androidx.compose.ui.Modifier
+        Column(
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            androidx.compose.material3.Icon(
-                imageVector = androidx.compose.material.icons.Icons.Default.Person,
+            Icon(
+                imageVector = Icons.Default.Person,
                 contentDescription = null,
-                modifier = androidx.compose.ui.Modifier.size(80.dp),
+                modifier = Modifier.size(80.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
-            androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
-            androidx.compose.material3.Text(
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
                 text = "Александр Петров",
                 style = MaterialTheme.typography.headlineSmall
             )
-            androidx.compose.material3.Text(
+            Text(
                 text = "+7 (999) 123-45-67",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        }
-    }
-}
-                    HomeScreen()
-                }
-            }
         }
     }
 }
