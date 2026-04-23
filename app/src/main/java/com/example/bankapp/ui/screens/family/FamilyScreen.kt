@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,10 +42,10 @@ fun FamilyScreen(
                 title = { Text("Семья и безопасность") },
                 actions = {
                     IconButton(onClick = { showSecuritySettings = true }) {
-                        Icon(Icons.Default.Security, contentDescription = "Настройки безопасности")
+                        Icon(Icons.Outlined.Security, contentDescription = "Настройки безопасности")
                     }
                     IconButton(onClick = { showAddMemberDialog = true }) {
-                        Icon(Icons.Default.PersonAdd, contentDescription = "Добавить члена семьи")
+                        Icon(Icons.Outlined.PersonAdd, contentDescription = "Добавить члена семьи")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -196,25 +197,25 @@ fun FamilyStatsCard(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 StatItem(
-                    icon = Icons.Default.People,
+                    icon = Icons.Outlined.People,
                     value = totalMembers.toString(),
                     label = "Членов семьи",
                     color = MaterialTheme.colorScheme.primary
                 )
                 StatItem(
-                    icon = Icons.Default.Visibility,
+                    icon = Icons.Outlined.Visibility,
                     value = monitoredCount.toString(),
                     label = "Под контролем",
                     color = MaterialTheme.colorScheme.secondary
                 )
                 StatItem(
-                    icon = Icons.Default.Warning,
+                    icon = Icons.Outlined.Warning,
                     value = activeAlerts.toString(),
                     label = "Тревоги",
                     color = if (activeAlerts > 0) WarningOrange else SuccessGreen
                 )
                 StatItem(
-                    icon = Icons.Default.Notifications,
+                    icon = Icons.Outlined.Notifications,
                     value = pendingNotifications.toString(),
                     label = "Ожидают",
                     color = MaterialTheme.colorScheme.tertiary
@@ -299,11 +300,11 @@ fun FamilyMemberCard(
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = when (member.relation) {
-                                    "Я" -> Icons.Default.Person
-                                    "Супруга", "Супруг" -> Icons.Default.Favorite
-                                    "Сын", "Дочь" -> Icons.Default.ChildCare
-                                    "Мать", "Отец" -> Icons.Default.Senior
-                                    else -> Icons.Default.Person
+                                    "Я" -> Icons.Outlined.Person
+                                    "Супруга", "Супруг" -> Icons.Outlined.Favorite
+                                    "Сын", "Дочь" -> Icons.Outlined.ChildCare
+                                    "Мать", "Отец" -> Icons.Outlined.Senior
+                                    else -> Icons.Outlined.Person
                                 },
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -432,12 +433,12 @@ fun SuspiciousOperationCard(
                 ) {
                     Icon(
                         imageVector = when (operation.type) {
-                            OperationType.TRANSFER -> Icons.Default.SwapHoriz
-                            OperationType.PAYMENT -> Icons.Default.Receipt
-                            OperationType.WITHDRAWAL -> Icons.Default.Money
-                            OperationType.PHONE_CALL -> Icons.Default.Phone
-                            OperationType.MESSENGER_ACTIVITY -> Icons.Default.Message
-                            else -> Icons.Default.Warning
+                            OperationType.TRANSFER -> Icons.Outlined.SwapHoriz
+                            OperationType.PAYMENT -> Icons.Outlined.Receipt
+                            OperationType.WITHDRAWAL -> Icons.Outlined.Money
+                            OperationType.PHONE_CALL -> Icons.Outlined.Phone
+                            OperationType.MESSENGER_ACTIVITY -> Icons.Outlined.Message
+                            else -> Icons.Outlined.Warning
                         },
                         contentDescription = null,
                         tint = riskColor,
@@ -496,7 +497,7 @@ fun SuspiciousOperationCard(
                             contentColor = SuccessGreen
                         )
                     ) {
-                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Подтвердить")
                     }
@@ -507,7 +508,7 @@ fun SuspiciousOperationCard(
                             containerColor = Color.Red
                         )
                     ) {
-                        Icon(Icons.Default.Block, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Outlined.Block, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Заблокировать")
                     }
@@ -527,7 +528,7 @@ fun SuspiciousOperationCard(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    Icons.Default.CheckCircle,
+                                    Icons.Outlined.CheckCircle,
                                     contentDescription = null,
                                     tint = SuccessGreen,
                                     modifier = Modifier.size(16.dp)
@@ -551,7 +552,7 @@ fun SuspiciousOperationCard(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    Icons.Default.Block,
+                                    Icons.Outlined.Block,
                                     contentDescription = null,
                                     tint = Color.Red,
                                     modifier = Modifier.size(16.dp)
@@ -589,7 +590,7 @@ fun NotificationCard(notification: FamilyNotification) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Notifications,
+                    imageVector = Icons.Outlined.Notifications,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)

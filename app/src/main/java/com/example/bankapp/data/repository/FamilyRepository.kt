@@ -1,6 +1,7 @@
 package com.example.bankapp.data.repository
 
 import com.example.bankapp.data.api.*
+import com.example.bankapp.data.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,10 +42,6 @@ class FamilyRepository {
     // Счета пользователя
     private val _accounts = MutableStateFlow<List<ExtendedAccount>>(emptyList())
     val accounts: StateFlow<List<ExtendedAccount>> = _accounts.asStateFlow()
-    
-    // Транзакции
-    private val _transactions = MutableStateFlow<List<TransactionItem>>(emptyList())
-    val transactions: StateFlow<List<TransactionItem>> = _transactions.asStateFlow()
 
     init {
         // Инициализация тестовыми данными
@@ -346,7 +343,7 @@ class FamilyRepository {
     }
     
     suspend fun refreshToken(): Result<TokenResponse> {
-        apiClient.refreshToken()
+        return apiClient.refreshToken()
     }
     
     fun logout() {
@@ -400,7 +397,7 @@ class FamilyRepository {
     }
     
     suspend fun getAccount(accountId: String): Result<AccountDto> {
-        apiClient.getAccount(accountId)
+        return apiClient.getAccount(accountId)
     }
     
     suspend fun deposit(
@@ -454,17 +451,8 @@ class FamilyRepository {
         try {
             val result = apiClient.getTransactions(page, pageSize)
             if (result.isSuccess) {
-                val transactionsDto = result.getOrNull()?.items ?: emptyList()
-                _transactions.value = transactionsDto.map { dto ->
-                    TransactionItem(
-                        id = dto.id.toIntOrNull() ?: 0,
-                        title = dto.description ?: dto.type,
-                        date = dto.createdAt,
-                        amount = dto.amount * if (dto.type == "DEBIT") -1 else 1,
-                        isIncome = dto.type != "DEBIT",
-                        icon = {}
-                    )
-                }
+                // Transactions are loaded but not stored in this repository
+                // They should be handled by a separate TransactionRepository
             }
         } finally {
             _isLoading.value = false
@@ -474,23 +462,23 @@ class FamilyRepository {
     // ==================== SECURITY & TELEMETRY ====================
     
     suspend fun getSecurityHistory(): Result<List<SecurityEvent>> {
-        apiClient.getSecurityHistory()
+        return apiClient.getSecurityHistory()
     }
     
     suspend fun getUserDevices(): Result<List<DeviceInfo>> {
-        apiClient.getUserDevices()
+        return apiClient.getUserDevices()
     }
     
     suspend fun revokeDevice(deviceId: String): Result<Unit> {
-        apiClient.revokeDevice(deviceId)
+        return apiClient.revokeDevice(deviceId)
     }
     
     suspend fun trustDevice(deviceId: String): Result<Unit> {
-        apiClient.trustDevice(deviceId)
+        return apiClient.trustDevice(deviceId)
     }
     
     suspend fun collectTelemetry(data: Map<String, Any>): Result<Unit> {
-        apiClient.collectSessionTelemetry(data)
+        return apiClient.collectSessionTelemetry(data)
     }
     
     // ==================== SETTINGS ====================

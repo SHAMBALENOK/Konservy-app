@@ -1,19 +1,67 @@
 ```
-# Compiled and build artifacts
+# Kotlin/Android build artifacts
 *.class
-*.o
-*.obj
-*.out
-build/
-# Dependencies
+*.jar
+*.war
+*.aar
+
+# Gradle
 .gradle/
-# Logs and temp files
-*.log
-*.tmp
-# Editors
+build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Android Studio
+*.iml
+*.ipr
+*.iws
 .idea/
-# Environment
+*.hprof
+.DS_Store
+
+# Temporary folder for compilation
+tmp/
+temp/
+
+# Log files
+*.log
+
+# Environment files
 .env
 .env.local
 *.env.*
+
+# Coverage reports
+coverage/
+*.gcov
+*.lcov
+*.profdata
+
+# Compiled Python files (if any Python scripts exist)
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Node.js (if any Node.js tools used)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
 ```
