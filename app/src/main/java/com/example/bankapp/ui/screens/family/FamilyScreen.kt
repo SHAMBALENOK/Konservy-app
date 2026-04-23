@@ -303,7 +303,7 @@ fun FamilyMemberCard(
                                     "Я" -> Icons.Outlined.Person
                                     "Супруга", "Супруг" -> Icons.Outlined.Favorite
                                     "Сын", "Дочь" -> Icons.Outlined.ChildCare
-                                    "Мать", "Отец" -> Icons.Outlined.Senior
+                                    "Мать", "Отец" -> Icons.Outlined.Accessibility
                                     else -> Icons.Outlined.Person
                                 },
                                 contentDescription = null,
@@ -695,18 +695,14 @@ fun AddMemberDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                ExposedDropdownMenuBox(
-                    expanded = false,
-                    onExpandedChange = {}
-                ) {
-                    OutlinedTextField(
-                        value = relation,
-                        onValueChange = { relation = it },
-                        label = { Text("Родственная связь") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                // Using a simple TextField instead of ExposedDropdownMenuBox for now
+                OutlinedTextField(
+                    value = relation,
+                    onValueChange = { relation = it },
+                    label = { Text("Родственная связь") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
                 OutlinedTextField(
                     value = age,
                     onValueChange = { age = it },
