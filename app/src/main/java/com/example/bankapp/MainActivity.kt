@@ -102,7 +102,6 @@ fun mainNavigation(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun profileScreen(
     repository: FamilyRepository,
