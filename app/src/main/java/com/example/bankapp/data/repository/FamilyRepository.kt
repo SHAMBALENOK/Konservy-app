@@ -1,15 +1,19 @@
 package com.example.bankapp.data.repository
 
-import com.example.bankapp.data.model.*
+import com.example.bankapp.data.api.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import androidx.compose.ui.graphics.Color
+import java.util.UUID
 
 /**
  * Репозиторий для управления семейными счетами и уведомлениями
+ * Интегрирован с API для выполнения реальных запросов
  */
 class FamilyRepository {
+    
+    private val apiClient = ApiClientProvider.client
 
     private val _familyMembers = MutableStateFlow<List<FamilyMember>>(emptyList())
     val familyMembers: StateFlow<List<FamilyMember>> = _familyMembers.asStateFlow()
@@ -25,6 +29,22 @@ class FamilyRepository {
 
     private val _notifications = MutableStateFlow<List<FamilyNotification>>(emptyList())
     val notifications: StateFlow<List<FamilyNotification>> = _notifications.asStateFlow()
+    
+    // Состояние загрузки
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    
+    // Текущий пользователь
+    private val _currentUser = MutableStateFlow<UserData?>(null)
+    val currentUser: StateFlow<UserData?> = _currentUser.asStateFlow()
+    
+    // Счета пользователя
+    private val _accounts = MutableStateFlow<List<ExtendedAccount>>(emptyList())
+    val accounts: StateFlow<List<ExtendedAccount>> = _accounts.asStateFlow()
+    
+    // Транзакции
+    private val _transactions = MutableStateFlow<List<TransactionItem>>(emptyList())
+    val transactions: StateFlow<List<TransactionItem>> = _transactions.asStateFlow()
 
     init {
         // Инициализация тестовыми данными
@@ -272,5 +292,220 @@ class FamilyRepository {
                 }
             )
         }
+    }
+    
+    // ==================== AUTHENTICATION ====================
+    
+    suspend fun register(
+        email: String,
+        password: String,
+        firstName: String,
+        lastName: String,
+        phone: String? = null
+    ): Result<TokenResponse> {
+        _isLoading.value = true
+        return try {
+            val result = apiClient.register(RegisterRequest(email, password, firstName, lastName, phone))
+            if (result.isSuccess) {
+                // Загружаем данные пользователя после регистрации
+                loadUserAccounts()
+            }
+            result
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    suspend fun login(username: String, password: String): Result<TokenResponse> {
+        _isLoading.value = true
+        return try {
+            val result = apiClient.login(username, password)
+            if (result.isSuccess) {
+                // Загружаем данные пользователя после входа
+                loadUserAccounts()
+            }
+            result
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    suspend fun loginWithFido(): Result<TokenResponse> {
+        _isLoading.value = true
+        return try {
+            // Шаг 1: Получаем challenge
+            val challengeResult = apiClient.getFidoLoginChallenge()
+            if (challengeResult.isFailure) return Result.failure(challengeResult.exceptionOrNull()!!)
+            
+            // Здесь должна быть логика FIDO2 аутентификации через биометрию устройства
+            // Для демонстрации возвращаем ошибку
+            Result.failure(Exception("FIDO2 authentication requires device biometric support"))
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    suspend fun refreshToken(): Result<TokenResponse> {
+        apiClient.refreshToken()
+    }
+    
+    fun logout() {
+        apiClient.clearTokens()
+        _currentUser.value = null
+        _accounts.value = emptyList()
+    }
+    
+    // ==================== ACCOUNTS ====================
+    
+    private suspend fun loadUserAccounts() {
+        _isLoading.value = true
+        try {
+            val accountsResult = apiClient.getAccounts()
+            if (accountsResult.isSuccess) {
+                val accountsDto = accountsResult.getOrNull()?.items ?: emptyList()
+                _accounts.value = accountsDto.mapIndexed { index, dto ->
+                    ExtendedAccount(
+                        id = dto.id.toIntOrNull() ?: index,
+                        accountName = "Счёт ${index + 1}",
+                        accountNumber = dto.accountNumber,
+                        balance = dto.balance,
+                        currency = dto.currency,
+                        cardColor = when (index % 3) {
+                            0 -> Color(0xFF1976D2)
+                            1 -> Color(0xFF00897B)
+                            else -> Color(0xFFE91E63)
+                        },
+                        ownerMemberId = 1,
+                        isJoint = false,
+                        spendingLimit = null
+                    )
+                }
+            }
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    suspend fun createAccount(currency: String = "RUB", initialDeposit: Double? = null): Result<AccountDto> {
+        _isLoading.value = true
+        return try {
+            val result = apiClient.createAccount(CreateAccountRequest(currency, initialDeposit))
+            if (result.isSuccess) {
+                loadUserAccounts()
+            }
+            result
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    suspend fun getAccount(accountId: String): Result<AccountDto> {
+        apiClient.getAccount(accountId)
+    }
+    
+    suspend fun deposit(
+        accountId: String, 
+        amount: Double, 
+        description: String? = null
+    ): Result<AccountDto> {
+        _isLoading.value = true
+        return try {
+            val idempotencyKey = UUID.randomUUID().toString()
+            apiClient.deposit(accountId, amount, idempotencyKey, description)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    suspend fun withdraw(
+        accountId: String, 
+        amount: Double, 
+        description: String? = null
+    ): Result<AccountDto> {
+        _isLoading.value = true
+        return try {
+            val idempotencyKey = UUID.randomUUID().toString()
+            apiClient.withdraw(accountId, amount, idempotencyKey, description)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    // ==================== TRANSACTIONS ====================
+    
+    suspend fun transfer(
+        fromAccountId: String,
+        toAccountId: String,
+        amount: Double,
+        description: String? = null
+    ): Result<TransactionDto> {
+        _isLoading.value = true
+        return try {
+            val currentUserId = _currentUser.value?.id ?: "unknown"
+            val idempotencyKey = UUID.randomUUID().toString()
+            apiClient.transfer(fromAccountId, toAccountId, amount, idempotencyKey, description, currentUserId)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    suspend fun loadTransactions(page: Int = 1, pageSize: Int = 20) {
+        _isLoading.value = true
+        try {
+            val result = apiClient.getTransactions(page, pageSize)
+            if (result.isSuccess) {
+                val transactionsDto = result.getOrNull()?.items ?: emptyList()
+                _transactions.value = transactionsDto.map { dto ->
+                    TransactionItem(
+                        id = dto.id.toIntOrNull() ?: 0,
+                        title = dto.description ?: dto.type,
+                        date = dto.createdAt,
+                        amount = dto.amount * if (dto.type == "DEBIT") -1 else 1,
+                        isIncome = dto.type != "DEBIT",
+                        icon = {}
+                    )
+                }
+            }
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    // ==================== SECURITY & TELEMETRY ====================
+    
+    suspend fun getSecurityHistory(): Result<List<SecurityEvent>> {
+        apiClient.getSecurityHistory()
+    }
+    
+    suspend fun getUserDevices(): Result<List<DeviceInfo>> {
+        apiClient.getUserDevices()
+    }
+    
+    suspend fun revokeDevice(deviceId: String): Result<Unit> {
+        apiClient.revokeDevice(deviceId)
+    }
+    
+    suspend fun trustDevice(deviceId: String): Result<Unit> {
+        apiClient.trustDevice(deviceId)
+    }
+    
+    suspend fun collectTelemetry(data: Map<String, Any>): Result<Unit> {
+        apiClient.collectSessionTelemetry(data)
+    }
+    
+    // ==================== SETTINGS ====================
+    
+    /**
+     * Обновить URL сервера в настройках
+     */
+    fun updateServerUrl(newUrl: String) {
+        ApiConfig.updateBaseUrl(newUrl)
+    }
+    
+    /**
+     * Получить текущий URL сервера
+     */
+    fun getServerUrl(): String {
+        return ApiConfig.baseUrl
     }
 }
