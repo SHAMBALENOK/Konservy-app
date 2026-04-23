@@ -23,7 +23,6 @@ import com.example.bankapp.ui.theme.SuccessGreen
 import com.example.bankapp.ui.theme.TextSecondary
 import com.example.bankapp.ui.theme.WarningOrange
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FamilyScreen(
     repository: FamilyRepository = remember { FamilyRepository() }
