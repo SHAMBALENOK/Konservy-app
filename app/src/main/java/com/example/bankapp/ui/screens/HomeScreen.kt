@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -53,19 +54,19 @@ fun HomeScreen(
 
     val transactions = listOf(
         TransactionItem(1, "Перевод от Иванова А.", "Сегодня", 5000.0, true) {
-            Icon(Icons.Default.ArrowDownward, contentDescription = null, tint = SuccessGreen)
+            Icon(Icons.Outlined.ArrowDownward, contentDescription = null, tint = SuccessGreen)
         },
         TransactionItem(2, "Оплата ЖКХ", "Вчера", -3500.0, false) {
-            Icon(Icons.Default.Home, contentDescription = null, tint = WarningOrange)
+            Icon(Icons.Outlined.Home, contentDescription = null, tint = WarningOrange)
         },
         TransactionItem(3, "Покупка в магазине", "Вчера", -2150.0, false) {
-            Icon(Icons.Default.ShoppingCart, contentDescription = null, tint = TextSecondary)
+            Icon(Icons.Outlined.ShoppingCart, contentDescription = null, tint = TextSecondary)
         },
         TransactionItem(4, "Зарплата", "15 дек", 85000.0, true) {
-            Icon(Icons.Default.ArrowDownward, contentDescription = null, tint = SuccessGreen)
+            Icon(Icons.Outlined.ArrowDownward, contentDescription = null, tint = SuccessGreen)
         },
         TransactionItem(5, "Кафе \"Центральное\"", "14 дек", -1200.0, false) {
-            Icon(Icons.Default.Restaurant, contentDescription = null, tint = TextSecondary)
+            Icon(Icons.Outlined.Restaurant, contentDescription = null, tint = TextSecondary)
         }
     )
 
@@ -75,13 +76,13 @@ fun HomeScreen(
                 title = { Text("Мой Банк") },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Настройки")
+                        Icon(Icons.Outlined.Settings, contentDescription = "Настройки")
                     }
                     IconButton(onClick = { }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Уведомления")
+                        Icon(Icons.Outlined.Notifications, contentDescription = "Уведомления")
                     }
                     IconButton(onClick = { }) {
-                        Icon(Icons.Default.Search, contentDescription = "Поиск")
+                        Icon(Icons.Outlined.Search, contentDescription = "Поиск")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -96,25 +97,25 @@ fun HomeScreen(
                 NavigationBarItem(
                     selected = true,
                     onClick = { },
-                    icon = { Icon(Icons.Default.Home, contentDescription = null) },
+                    icon = { Icon(Icons.Outlined.Home, contentDescription = null) },
                     label = { Text("Главная") }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { },
-                    icon = { Icon(Icons.Default.AccountBalance, contentDescription = null) },
+                    icon = { Icon(Icons.Outlined.AccountBalance, contentDescription = null) },
                     label = { Text("Платежи") }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { },
-                    icon = { Icon(Icons.Default.SwapHoriz, contentDescription = null) },
+                    icon = { Icon(Icons.Outlined.SwapHoriz, contentDescription = null) },
                     label = { Text("Переводы") }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { },
-                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    icon = { Icon(Icons.Outlined.Person, contentDescription = null) },
                     label = { Text("Профиль") }
                 )
             }
@@ -148,10 +149,10 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    QuickActionButton(icon = Icons.Default.Send, label = "Перевести")
-                    QuickActionButton(icon = Icons.Default.Add, label = "Пополнить")
-                    QuickActionButton(icon = Icons.Default.Receipt, label = "Платёж")
-                    QuickActionButton(icon = Icons.Default.MoreHoriz, label = "Ещё")
+                    QuickActionButton(icon = Icons.Outlined.Send, label = "Перевести")
+                    QuickActionButton(icon = Icons.Outlined.Add, label = "Пополнить")
+                    QuickActionButton(icon = Icons.Outlined.Receipt, label = "Платёж")
+                    QuickActionButton(icon = Icons.Outlined.MoreHoriz, label = "Ещё")
                 }
             }
 

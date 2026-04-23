@@ -34,7 +34,6 @@ class ApiClient {
     private fun createHttpClient(): HttpClient {
         return HttpClient(CIO) {
             engine {
-                connectTimeout = ApiConfig.CONNECT_TIMEOUT_SECONDS * 1000
                 requestTimeout = ApiConfig.READ_TIMEOUT_SECONDS * 1000
             }
             
