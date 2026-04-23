@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -31,6 +31,7 @@ import com.example.bankapp.ui.screens.HomeScreen
 import com.example.bankapp.ui.screens.auth.TwoFactorAuthScreen
 import com.example.bankapp.ui.screens.family.FamilyScreen
 import com.example.bankapp.ui.screens.help.HelpScreen
+import com.example.bankapp.ui.screens.settings.SettingsScreen
 import com.example.bankapp.ui.theme.BankAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -53,6 +54,7 @@ class MainActivity : ComponentActivity() {
 fun bankApp() {
     var isAuthenticated by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(0) }
+    var showSettings by remember { mutableStateOf(false) }
     
     val repository = remember { FamilyRepository() }
 
@@ -65,8 +67,16 @@ fun bankApp() {
         mainNavigation(
             selectedTab = selectedTab,
             onTabSelected = { selectedTab = it },
-            repository = repository
+            repository = repository,
+            onOpenSettings = { showSettings = true }
         )
+        
+        if (showSettings) {
+            SettingsScreen(
+                repository = repository,
+                onNavigateBack = { showSettings = false }
+            )
+        }
     }
 }
 
@@ -74,22 +84,31 @@ fun bankApp() {
 fun mainNavigation(
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
-    repository: FamilyRepository
+    repository: FamilyRepository,
+    onOpenSettings: () -> Unit
 ) {
     when (selectedTab) {
-        0 -> HomeScreen()
+        0 -> HomeScreen(repository = repository, onOpenSettings = onOpenSettings)
         1 -> FamilyScreen(repository = repository)
         2 -> HelpScreen()
-        3 -> profileScreen()
+        3 -> profileScreen(repository = repository, onOpenSettings = onOpenSettings)
     }
 }
 
 @Composable
-fun profileScreen() {
+fun profileScreen(
+    repository: FamilyRepository,
+    onOpenSettings: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Профиль") },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Настройки")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -120,6 +139,21 @@ fun profileScreen() {
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            // Кнопка выхода
+            OutlinedButton(
+                onClick = {
+                    repository.logout()
+                    // Здесь должна быть логика возврата к экрану аутентификации
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Logout, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Выйти")
+            }
         }
     }
 }

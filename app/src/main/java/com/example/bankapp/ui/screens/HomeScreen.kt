@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.bankapp.data.repository.FamilyRepository
 import com.example.bankapp.ui.theme.SuccessGreen
 import com.example.bankapp.ui.theme.TextSecondary
 import com.example.bankapp.ui.theme.WarningOrange
@@ -39,7 +40,10 @@ data class TransactionItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    repository: FamilyRepository,
+    onOpenSettings: () -> Unit
+) {
     val accounts = listOf(
         AccountCard(1, "Основной счёт", "**** 4521", 125430.50, "RUB", Color(0xFF1976D2)),
         AccountCard(2, "Сберегательный", "**** 8832", 500000.00, "RUB", Color(0xFF00897B)),
@@ -69,6 +73,9 @@ fun HomeScreen() {
             TopAppBar(
                 title = { Text("Мой Банк") },
                 actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Настройки")
+                    }
                     IconButton(onClick = { }) {
                         Icon(Icons.Default.Notifications, contentDescription = "Уведомления")
                     }
