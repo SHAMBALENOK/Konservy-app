@@ -209,7 +209,7 @@ fun RegisterScreen(
                 label = { Text("Подтвердите пароль") },
                 placeholder = { Text("Повторите пароль") },
                 leadingIcon = {
-                    Icon(Icons.Default.LockOutline, contentDescription = null)
+                    Icon(Icons.Default.Lock, contentDescription = null)
                 },
                 trailingIcon = {
                     IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
@@ -285,9 +285,10 @@ fun RegisterScreen(
                             val registerRequest = RegisterRequest(
                                 email = email.trim(),
                                 password = password,
-                                firstName = firstName.trim(),
-                                lastName = lastName.trim(),
-                                phone = phone.trim().takeIf { it.isNotBlank() }
+                                firstName = firstName.trim().takeIf { it.isNotBlank() },
+                                lastName = lastName.trim().takeIf { it.isNotBlank() },
+                                phone = phone.trim().takeIf { it.isNotBlank() },
+                                username = username.trim()
                             )
                             
                             val result = apiClient.register(registerRequest)
