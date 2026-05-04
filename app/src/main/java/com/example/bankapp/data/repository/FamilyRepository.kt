@@ -317,7 +317,7 @@ class FamilyRepository {
     suspend fun login(username: String, password: String): Result<TokenResponse> {
         _isLoading.value = true
         return try {
-            val result = apiClient.login(username, password)
+            val result = apiClient.login(LoginRequest(username, password))
             if (result.isSuccess) {
                 // Загружаем данные пользователя после входа
                 loadUserAccounts()
