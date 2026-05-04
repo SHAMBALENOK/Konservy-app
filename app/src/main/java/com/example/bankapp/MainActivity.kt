@@ -35,7 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.bankapp.data.repository.FamilyRepository
 import com.example.bankapp.ui.screens.HomeScreen
-import com.example.bankapp.ui.screens.auth.TwoFactorAuthScreen
+import com.example.bankapp.ui.screens.auth.LoginScreen
+import com.example.bankapp.ui.screens.auth.RegisterScreen
+import com.example.bankapp.ui.screens.auth.SetPinScreen
 import com.example.bankapp.ui.screens.family.FamilyScreen
 import com.example.bankapp.ui.screens.help.HelpScreen
 import com.example.bankapp.ui.screens.settings.SettingsScreen
@@ -57,32 +59,69 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Основное состояние приложения
+ */
+sealed class AppState {
+    object Login : AppState()
+    object Register : AppState()
+    object SetPin : AppState()
+    object Authenticated : AppState()
+}
+
 @Composable
 fun bankApp() {
-    var isAuthenticated by remember { mutableStateOf(false) }
+    var appState by remember { mutableStateOf<AppState>(AppState.Login) }
     var selectedTab by remember { mutableStateOf(0) }
     var showSettings by remember { mutableStateOf(false) }
+    var username by remember { mutableStateOf("") }
     
     val repository = remember { FamilyRepository() }
 
-    if (!isAuthenticated) {
-        TwoFactorAuthScreen(
-            onAuthSuccess = { isAuthenticated = true },
-            onAuthFailure = { /* Обработка ошибки */ }
-        )
-    } else {
-        mainNavigation(
-            selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it },
-            repository = repository,
-            onOpenSettings = { showSettings = true }
-        )
-        
-        if (showSettings) {
-            SettingsScreen(
-                repository = repository,
-                onNavigateBack = { showSettings = false }
+    when (appState) {
+        is AppState.Login -> {
+            LoginScreen(
+                onLoginSuccess = { 
+                    // После успешного входа - переходим в приложение
+                    // В реальном приложении здесь должна быть проверка PIN
+                    appState = AppState.Authenticated 
+                },
+                onNavigateToRegister = { appState = AppState.Register }
             )
+        }
+        is AppState.Register -> {
+            RegisterScreen(
+                onRegistrationSuccess = { registeredUsername ->
+                    username = registeredUsername
+                    appState = AppState.SetPin
+                },
+                onNavigateToLogin = { appState = AppState.Login }
+            )
+        }
+        is AppState.SetPin -> {
+            SetPinScreen(
+                username = username,
+                onPinSetSuccess = { 
+                    // PIN установлен успешно - переходим в приложение
+                    appState = AppState.Authenticated 
+                },
+                onCancel = { appState = AppState.Login }
+            )
+        }
+        is AppState.Authenticated -> {
+            mainNavigation(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it },
+                repository = repository,
+                onOpenSettings = { showSettings = true }
+            )
+            
+            if (showSettings) {
+                SettingsScreen(
+                    repository = repository,
+                    onNavigateBack = { showSettings = false }
+                )
+            }
         }
     }
 }
