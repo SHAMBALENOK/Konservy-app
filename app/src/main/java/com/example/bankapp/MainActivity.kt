@@ -1,5 +1,7 @@
 package com.example.bankapp
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,10 +34,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.bankapp.data.repository.FamilyRepository
 import com.example.bankapp.ui.screens.HomeScreen
 import com.example.bankapp.ui.screens.auth.LoginScreen
+import com.example.bankapp.ui.screens.auth.PinEntryScreen
 import com.example.bankapp.ui.screens.auth.RegisterScreen
 import com.example.bankapp.ui.screens.auth.SetPinScreen
 import com.example.bankapp.ui.screens.family.FamilyScreen
@@ -66,6 +70,7 @@ sealed class AppState {
     object Login : AppState()
     object Register : AppState()
     object SetPin : AppState()
+    object PinEntry : AppState()  // Экран ввода PIN для существующих пользователей
     object Authenticated : AppState()
 }
 
@@ -75,18 +80,40 @@ fun bankApp() {
     var selectedTab by remember { mutableStateOf(0) }
     var showSettings by remember { mutableStateOf(false) }
     var username by remember { mutableStateOf("") }
+    val context = LocalContext.current
     
     val repository = remember { FamilyRepository() }
+    
+    // Проверяем, установлен ли PIN
+    val prefs: SharedPreferences = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
+    val isPinSet = prefs.getBoolean("is_pin_set", false)
+    val savedUsername = prefs.getString("username", "") ?: ""
 
     when (appState) {
         is AppState.Login -> {
-            LoginScreen(
-                onLoginSuccess = { 
-                    // После успешного входа - переходим в приложение
-                    // В реальном приложении здесь должна быть проверка PIN
-                    appState = AppState.Authenticated 
+            if (isPinSet) {
+                // Если PIN уже установлен, показываем экран ввода PIN
+                appState = AppState.PinEntry
+            } else {
+                LoginScreen(
+                    onLoginSuccess = { 
+                        // После успешного входа по username/password - переходим в приложение
+                        appState = AppState.Authenticated 
+                    },
+                    onNavigateToRegister = { appState = AppState.Register }
+                )
+            }
+        }
+        is AppState.PinEntry -> {
+            PinEntryScreen(
+                onPinSuccess = {
+                    // PIN верный - переходим в приложение
+                    appState = AppState.Authenticated
                 },
-                onNavigateToRegister = { appState = AppState.Register }
+                onNavigateToLogin = {
+                    // Пользователь хочет войти по username/password
+                    appState = AppState.Login
+                }
             )
         }
         is AppState.Register -> {

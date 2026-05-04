@@ -8,13 +8,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import android.content.Context
+import android.content.SharedPreferences
 
 /**
  * Экран установки PIN-кода для входа в приложение
@@ -35,6 +37,7 @@ fun SetPinScreen(
     var step by remember { mutableStateOf(PinSetupStep.ENTER_PIN) }
     
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -80,7 +83,7 @@ fun SetPinScreen(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Запомните этот код - он будет использоваться для входа в приложение",
+                text = "Запомните этот код - он будет использоваться для быстрого входа в приложение",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -198,12 +201,14 @@ fun SetPinScreen(
                         // Сохраняем PIN и завершаем установку
                         isLoading = true
                         scope.launch {
-                            // Здесь должна быть логика сохранения PIN в защищённом хранилище
-                            // Например, в Android Keystore или EncryptedSharedPreferences
-                            delay(500) // Имитация сохранения
+                            // Сохраняем PIN и username в SharedPreferences
+                            val prefs: SharedPreferences = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
+                            prefs.edit()
+                                .putString("pin_code", pin)
+                                .putString("username", username)
+                                .putBoolean("is_pin_set", true)
+                                .apply()
                             
-                            // Сохраняем PIN локально (в реальном приложении использовать безопасное хранилище!)
-                            // В production используйте EncryptedSharedPreferences или BiometricPrompt
                             isLoading = false
                             onPinSetSuccess()
                         }

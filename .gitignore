@@ -1,1 +1,41 @@
-Nothing should be ignored since only a Kotlin source file was modified and no build artifacts, dependencies, or temporary files were detected in the changes.
+```
+# Compiled and build artifacts
+*.class
+*.o
+*.obj
+*.out
+*.so
+*.dll
+*.exe
+build/
+# Dependencies
+.gradle/
+# Logs and temp files
+*.log
+*.tmp
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+# Environment
+.env
+.env.local
+*.env.*
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+# Java specific
+*.jar
+*.war
+*.ear
+hs_err_pid*
+replay_pid*
+```

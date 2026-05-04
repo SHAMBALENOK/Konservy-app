@@ -125,12 +125,11 @@ class ApiClient {
         }
     }
     
-    suspend fun login(username: String, password: String): Result<TokenResponse> {
+    suspend fun login(request: LoginRequest): Result<TokenResponse> {
         return try {
             val response = client.post("${ApiConfig.baseUrl}${ApiConfig.BASE_PATH}/auth/login") {
                 contentType(ContentType.Application.Json)
-                setBody(LoginRequest(username, password))
-                headers.append("Content-Type", "application/x-www-form-urlencoded")
+                setBody(request)
             }
             if (response.status.isSuccess()) {
                 val tokens = response.body<TokenResponse>()
