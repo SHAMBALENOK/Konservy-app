@@ -107,16 +107,15 @@ class ApiClient {
     
     // ==================== AUTHENTICATION ====================
     
-    suspend fun register(request: RegisterRequest): Result<TokenResponse> {
+    suspend fun register(request: RegisterRequest): Result<RegisterResponse> {
         return try {
             val response = client.post("${ApiConfig.baseUrl}${ApiConfig.BASE_PATH}/auth/register") {
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }
             if (response.status.isSuccess()) {
-                val tokens = response.body<TokenResponse>()
-                setTokens(tokens.accessToken, tokens.refreshToken)
-                Result.success(tokens)
+                val result = response.body<RegisterResponse>()
+                Result.success(result)
             } else {
                 Result.failure(Exception("Registration failed: ${response.status}"))
             }
