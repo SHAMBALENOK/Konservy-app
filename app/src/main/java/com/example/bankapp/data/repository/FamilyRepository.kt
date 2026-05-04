@@ -298,11 +298,12 @@ class FamilyRepository {
         password: String,
         firstName: String,
         lastName: String,
-        phone: String? = null
+        phone: String? = null,
+        username: String = email
     ): Result<TokenResponse> {
         _isLoading.value = true
         return try {
-            val result = apiClient.register(RegisterRequest(email, password, firstName, lastName, phone))
+            val result = apiClient.register(RegisterRequest(email, password, firstName, lastName, phone, username))
             if (result.isSuccess) {
                 // Загружаем данные пользователя после регистрации
                 loadUserAccounts()
