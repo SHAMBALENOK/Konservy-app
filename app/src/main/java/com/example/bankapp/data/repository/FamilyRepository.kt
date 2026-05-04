@@ -303,7 +303,8 @@ class FamilyRepository {
     ): Result<TokenResponse> {
         _isLoading.value = true
         return try {
-            val result = apiClient.register(RegisterRequest(email, password, firstName, lastName, phone, username))
+            // Banking API требует только username и password для регистрации
+            val result = apiClient.register(RegisterRequest(username, password))
             if (result.isSuccess) {
                 // Загружаем данные пользователя после регистрации
                 loadUserAccounts()
