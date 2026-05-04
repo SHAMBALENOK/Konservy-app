@@ -45,7 +45,8 @@ fun ServerSetupScreen(
             
             val response = client.get("$url/health")
             client.close()
-            response.status.value in 200..299
+            val statusCode = response.status.value
+            statusCode >= 200 && statusCode < 300
         } catch (e: Exception) {
             false
         }
