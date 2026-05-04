@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.bankapp.data.api.ApiConfig
+import io.ktor.http.*
 import kotlinx.coroutines.launch
 
 /**
@@ -44,7 +45,8 @@ fun ServerSetupScreen(
             
             val response = client.get("$url/health")
             client.close()
-            response.status.value >= 200 && response.status.value < 300
+            val statusCode = response.status.value
+            statusCode >= 200 && statusCode < 300
         } catch (e: Exception) {
             false
         }
