@@ -31,10 +31,6 @@ fun RegisterScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
     
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -93,73 +89,6 @@ fun RegisterScreen(
             )
             
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Поле ввода Email
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                placeholder = { Text("example@mail.com") },
-                leadingIcon = {
-                    Icon(Icons.Default.Email, contentDescription = null)
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                isError = errorMessage != null && email.isEmpty()
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Поле ввода имени
-            OutlinedTextField(
-                value = firstName,
-                onValueChange = { firstName = it },
-                label = { Text("Имя") },
-                placeholder = { Text("Иван") },
-                leadingIcon = {
-                    Icon(Icons.Default.Person, contentDescription = null)
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Поле ввода фамилии
-            OutlinedTextField(
-                value = lastName,
-                onValueChange = { lastName = it },
-                label = { Text("Фамилия") },
-                placeholder = { Text("Иванов") },
-                leadingIcon = {
-                    Icon(Icons.Default.PersonOutline, contentDescription = null)
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Поле ввода телефона
-            OutlinedTextField(
-                value = phone,
-                onValueChange = { 
-                    if (it.length <= 15) {
-                        phone = it.filter { char -> char.isDigit() || char == '+' }
-                    }
-                },
-                label = { Text("Телефон") },
-                placeholder = { Text("+79991234567") },
-                leadingIcon = {
-                    Icon(Icons.Default.Phone, contentDescription = null)
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Поле ввода имени пользователя (username)
             OutlinedTextField(
@@ -248,18 +177,6 @@ fun RegisterScreen(
                     
                     // Валидация
                     when {
-                        email.isBlank() -> {
-                            errorMessage = "Введите email"
-                            return@Button
-                        }
-                        firstName.isBlank() -> {
-                            errorMessage = "Введите имя"
-                            return@Button
-                        }
-                        lastName.isBlank() -> {
-                            errorMessage = "Введите фамилию"
-                            return@Button
-                        }
                         username.isBlank() -> {
                             errorMessage = "Введите имя пользователя"
                             return@Button
@@ -286,12 +203,8 @@ fun RegisterScreen(
                     scope.launch {
                         try {
                             val registerRequest = RegisterRequest(
-                                email = email.trim(),
-                                password = password,
-                                firstName = firstName.trim().takeIf { it.isNotBlank() },
-                                lastName = lastName.trim().takeIf { it.isNotBlank() },
-                                phone = phone.trim().takeIf { it.isNotBlank() },
-                                username = username.trim()
+                                username = username.trim(),
+                                password = password
                             )
                             
                             val result = apiClient.register(registerRequest)
@@ -313,9 +226,6 @@ fun RegisterScreen(
                     }
                 },
                 enabled = !isLoading && 
-                        email.isNotBlank() && 
-                        firstName.isNotBlank() && 
-                        lastName.isNotBlank() && 
                         username.isNotBlank() && 
                         password.isNotBlank(),
                 modifier = Modifier.fillMaxWidth().height(56.dp)

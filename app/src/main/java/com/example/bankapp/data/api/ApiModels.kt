@@ -54,12 +54,8 @@ data class TokenResponse(
  */
 @Serializable
 data class RegisterRequest(
-    val email: String,
-    val password: String,
-    val firstName: String? = null,
-    val lastName: String? = null,
-    val phone: String? = null,
-    val username: String
+    val username: String,
+    val password: String
 )
 
 /**
