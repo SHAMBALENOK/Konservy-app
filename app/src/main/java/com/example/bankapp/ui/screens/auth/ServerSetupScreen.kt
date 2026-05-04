@@ -13,6 +13,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.bankapp.data.api.ApiConfig
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.launch
 
@@ -36,16 +42,14 @@ fun ServerSetupScreen(
     // Проверка доступности сервера
     suspend fun checkServerAvailability(url: String): Boolean {
         return try {
-            val client = io.ktor.client.HttpClient(io.ktor.client.engine.cio.CIO) {
-                install(io.ktor.client.plugins.HttpTimeout) {
+            val client = HttpClient(CIO) {
+                install(HttpTimeout) {
                     connectTimeoutMillis = 5000
                     requestTimeoutMillis = 10000
                 }
             }
             
-            val response = client.request("$url/health") {
-                method = HttpMethod.Get
-            }
+            val response = client.get("$url/health")
             client.close()
             val statusCode = response.status.value
             statusCode >= 200 && statusCode < 300
