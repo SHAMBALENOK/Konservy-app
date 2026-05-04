@@ -1,7 +1,9 @@
 package com.example.bankapp.ui.screens.auth
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -63,7 +65,8 @@ fun RegisterScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(24.dp)
-                .imePadding(),
+                .imePadding()
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Логотип и заголовок
