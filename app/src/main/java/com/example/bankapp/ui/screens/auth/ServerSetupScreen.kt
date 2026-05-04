@@ -40,21 +40,38 @@ fun ServerSetupScreen(
     val scope = rememberCoroutineScope()
     
     // Проверка доступности сервера
-    suspend fun checkServerAvailability(url: String): Boolean {
-        return try {
-            val client = HttpClient(CIO) {
-                install(HttpTimeout) {
-                    connectTimeoutMillis = 5000
-                    requestTimeoutMillis = 10000
-                }
+    suspend fun checkServerAvailability(url: String): Pair<Boolean, String?> {
+        val client = HttpClient(CIO) {
+            install(HttpTimeout) {
+                connectTimeoutMillis = 5000
+                requestTimeoutMillis = 10000
             }
+            followRedirects = true
+        }
+        
+        return try {
+            val cleanUrl = url.trimEnd('/')
+            val healthUrl = "$cleanUrl/health"
+            println("Checking server at: $healthUrl")
             
-            val response = client.get("$url/health")
-            client.close()
+            val response = client.get(healthUrl)
             val statusCode = response.status.value
-            statusCode >= 200 && statusCode < 300
+            println("Response status: $statusCode")
+            
+            val body = response.body<String>()
+            println("Response body: $body")
+            
+            client.close()
+            
+            if (statusCode >= 200 && statusCode < 300) {
+                Pair(true, null)
+            } else {
+                Pair(false, "Сервер вернул статус: $statusCode")
+            }
         } catch (e: Exception) {
-            false
+            println("Error checking server: ${e.message}")
+            e.printStackTrace()
+            Pair(false, "Ошибка подключения: ${e.message ?: "Неизвестная ошибка"}")
         }
     }
     
@@ -271,13 +288,14 @@ fun ServerSetupScreen(
                     isLoading = true
                     scope.launch {
                         val normalizedUrl = serverUrl.trimEnd('/')
-                        val isAvailable = checkServerAvailability(normalizedUrl)
+                        val (isAvailable, error) = checkServerAvailability(normalizedUrl)
                         
                         if (isAvailable) {
                             ApiConfig.updateBaseUrl(normalizedUrl)
+                            isLoading = false
                             onServerConfigured()
                         } else {
-                            errorMessage = "Сервер недоступен. Проверьте URL и подключение к сети."
+                            errorMessage = error ?: "Сервер недоступен. Проверьте URL и подключение к сети."
                             isLoading = false
                         }
                     }
