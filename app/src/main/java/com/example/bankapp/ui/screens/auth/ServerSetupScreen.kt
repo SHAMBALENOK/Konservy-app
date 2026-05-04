@@ -43,7 +43,9 @@ fun ServerSetupScreen(
                 }
             }
             
-            val response = client.get("$url/health")
+            val response = client.request("$url/health") {
+                method = HttpMethod.Get
+            }
             client.close()
             val statusCode = response.status.value
             statusCode >= 200 && statusCode < 300
