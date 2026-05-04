@@ -50,6 +50,15 @@ data class TokenResponse(
 )
 
 /**
+ * Ответ на регистрацию пользователя
+ */
+@Serializable
+data class RegisterResponse(
+    val message: String,
+    val username: String
+)
+
+/**
  * Запрос на регистрацию пользователя
  */
 @Serializable

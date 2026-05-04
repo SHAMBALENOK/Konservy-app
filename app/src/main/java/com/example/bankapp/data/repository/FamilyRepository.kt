@@ -300,14 +300,17 @@ class FamilyRepository {
         lastName: String,
         phone: String? = null,
         username: String = email
-    ): Result<TokenResponse> {
+    ): Result<RegisterResponse> {
         _isLoading.value = true
         return try {
             // Banking API требует только username и password для регистрации
             val result = apiClient.register(RegisterRequest(username, password))
             if (result.isSuccess) {
-                // Загружаем данные пользователя после регистрации
-                loadUserAccounts()
+                // После успешной регистрации выполняем логин для получения токенов
+                val loginResult = login(username, password)
+                if (loginResult.isFailure) {
+                    return Result.failure(Exception("Registration succeeded but login failed"))
+                }
             }
             result
         } finally {
