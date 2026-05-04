@@ -1,1 +1,27 @@
-Nothing should be ignored in this case, as the only change is a modification to a Kotlin source file (.kt) which is a source code file and should not be ignored.
+```
+# Compiled and build artifacts
+*.class
+*.o
+*.obj
+*.out
+build/
+target/
+
+# Dependencies
+.gradle/
+.libs/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Editors
+.idea/
+.vscode/
+
+# Environment
+.env
+.env.local
+*.env.*
+```
