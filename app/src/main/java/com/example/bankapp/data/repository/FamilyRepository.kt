@@ -43,6 +43,13 @@ class FamilyRepository {
     private val _currentUsername = MutableStateFlow<String>("")
     val currentUsername: StateFlow<String> = _currentUsername.asStateFlow()
     
+    /**
+     * Установить имя текущего пользователя
+     */
+    fun setUsername(username: String) {
+        _currentUsername.value = username
+    }
+    
     // Счета пользователя
     private val _accounts = MutableStateFlow<List<ExtendedAccount>>(emptyList())
     val accounts: StateFlow<List<ExtendedAccount>> = _accounts.asStateFlow()

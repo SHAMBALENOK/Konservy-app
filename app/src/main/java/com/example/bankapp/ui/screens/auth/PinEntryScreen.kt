@@ -46,7 +46,7 @@ fun PinEntryScreen(
     // Восстанавливаем имя пользователя в репозитории при входе через PIN
     LaunchedEffect(savedUsername) {
         if (savedUsername.isNotEmpty()) {
-            repository.currentUsername.value = savedUsername
+            repository.setUsername(savedUsername)
         }
     }
 
