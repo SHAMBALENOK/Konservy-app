@@ -171,8 +171,7 @@ fun SettingsScreen(
                 OutlinedButton(
                     onClick = {
                         // Сброс настроек
-                        serverUrl = "http://localhost:8080"
-                        repository.updateServerUrl(serverUrl)
+                        repository.updateServerUrl("http://localhost:8080")
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
