@@ -98,8 +98,7 @@ fun bankApp() {
     var selectedTab by remember { mutableStateOf(0) }
     var showSettings by remember { mutableStateOf(false) }
     var username by remember { mutableStateOf("") }
-    
-    val context = LocalContext.current
+
     val repository = remember { FamilyRepository(context) }
 
     when (appState) {
