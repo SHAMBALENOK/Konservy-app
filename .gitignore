@@ -1,80 +1,46 @@
 ```
-# Compiled and build artifacts
-*.class
-*.o
-*.obj
-*.out
-*.so
-*.a
-*.dll
-*.exe
-
-# Dependencies
+# Gradle
 .gradle/
 build/
-dist/
+!gradlew
 
-# Logs and temp files
-*.log
-*.tmp
+# Dependencies
+node_modules/
+
+# IDE files
+.vscode/
+.idea/
 *.swp
+*.swo
+*.tmp
+
+# Logs
+*.log
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
+# Python (if applicable)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+.venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+.coverage.*
 
 # System files
 .DS_Store
 Thumbs.db
-
-# Coverage reports
-coverage/
-htmlcov/
-*.coverage
-
-# Python specific
-__pycache__/
-*.pyc
-*.pyo
-.Python
-*.so
-*.egg-info/
-.eggs/
-
-# Java/Kotlin specific
-*.class
-*.jar
-*.war
-*.ear
-*.iml
-*.iws
-*.ipr
-
-# Android specific
-*.apk
-*.aar
-local.properties
-captures/
-.externalNativeBuild
-
-# MyPy cache
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pytest cache
-.pytest_cache/
-
-# Julia packages
-julia-*/
-
-# Zig build directories
-zig*/
 ```

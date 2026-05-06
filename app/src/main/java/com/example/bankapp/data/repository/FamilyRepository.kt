@@ -39,6 +39,10 @@ class FamilyRepository {
     private val _currentUser = MutableStateFlow<UserData?>(null)
     val currentUser: StateFlow<UserData?> = _currentUser.asStateFlow()
     
+    // Имя текущего пользователя (для отображения в UI)
+    private val _currentUsername = MutableStateFlow<String>("")
+    val currentUsername: StateFlow<String> = _currentUsername.asStateFlow()
+    
     // Счета пользователя
     private val _accounts = MutableStateFlow<List<ExtendedAccount>>(emptyList())
     val accounts: StateFlow<List<ExtendedAccount>> = _accounts.asStateFlow()
@@ -323,6 +327,8 @@ class FamilyRepository {
         return try {
             val result = apiClient.login(LoginRequest(username, password))
             if (result.isSuccess) {
+                // Сохраняем имя пользователя для отображения в UI
+                _currentUsername.value = username
                 // Загружаем данные пользователя после входа
                 loadUserAccounts()
             }
@@ -354,6 +360,7 @@ class FamilyRepository {
     fun logout() {
         apiClient.clearTokens()
         _currentUser.value = null
+        _currentUsername.value = ""
         _accounts.value = emptyList()
     }
     

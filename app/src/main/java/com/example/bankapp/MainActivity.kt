@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +42,7 @@ import com.example.bankapp.ui.screens.HomeScreen
 import com.example.bankapp.ui.screens.auth.LoginScreen
 import com.example.bankapp.ui.screens.auth.PinEntryScreen
 import com.example.bankapp.ui.screens.auth.RegisterScreen
+import com.example.bankapp.ui.screens.auth.ServerSetupScreen
 import com.example.bankapp.ui.screens.auth.SetPinScreen
 import com.example.bankapp.ui.screens.family.FamilyScreen
 import com.example.bankapp.ui.screens.help.HelpScreen
@@ -70,6 +72,7 @@ sealed class AppState {
     object Login : AppState()
     object Register : AppState()
     object SetPin : AppState()
+    object ServerSetup : AppState()  // Экран настройки сервера (только при первой регистрации)
     object PinEntry : AppState()  // Экран ввода PIN для существующих пользователей
     object Authenticated : AppState()
 }
@@ -81,9 +84,7 @@ fun bankApp() {
     val isPinSet = prefs.getBoolean("is_pin_set", false)
     
     // Определяем начальное состояние на основе наличия PIN
-    val initialState = if (isPinSet) AppState.PinEntry else AppState.Login
-    
-    var appState by remember { mutableStateOf<AppState>(initialState) }
+    var appState by remember { mutableStateOf<AppState>(if (isPinSet) AppState.PinEntry else AppState.Login) }
     var selectedTab by remember { mutableStateOf(0) }
     var showSettings by remember { mutableStateOf(false) }
     var username by remember { mutableStateOf("") }
@@ -125,12 +126,29 @@ fun bankApp() {
             SetPinScreen(
                 username = username,
                 onPinSetSuccess = { 
-                    // PIN установлен успешно - помечаем, что настройка была пройдена
-                    prefs.edit().putBoolean("has_seen_setup", true).apply()
-                    // Переходим в приложение
-                    appState = AppState.Authenticated 
+                    // PIN установлен успешно - показываем настройку сервера (только первый раз)
+                    val hasSeenSetup = prefs.getBoolean("has_seen_setup", false)
+                    if (!hasSeenSetup) {
+                        appState = AppState.ServerSetup
+                    } else {
+                        appState = AppState.Authenticated
+                    }
                 },
                 onCancel = { appState = AppState.Login }
+            )
+        }
+        is AppState.ServerSetup -> {
+            ServerSetupScreen(
+                onServerConfigured = { 
+                    // Сервер настроен - помечаем настройку как пройденную и переходим в приложение
+                    prefs.edit().putBoolean("has_seen_setup", true).apply()
+                    appState = AppState.Authenticated
+                },
+                onSkipSetup = {
+                    // Пропустить настройку - используем URL по умолчанию
+                    prefs.edit().putBoolean("has_seen_setup", true).apply()
+                    appState = AppState.Authenticated
+                }
             )
         }
         is AppState.Authenticated -> {
@@ -138,13 +156,22 @@ fun bankApp() {
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it },
                 repository = repository,
-                onOpenSettings = { showSettings = true }
+                onOpenSettings = { showSettings = true },
+                onLogout = {
+                    // Выход из приложения
+                    repository.logout()
+                    appState = AppState.Login
+                }
             )
             
             if (showSettings) {
                 SettingsScreen(
                     repository = repository,
-                    onNavigateBack = { showSettings = false }
+                    onNavigateBack = { showSettings = false },
+                    onChangeServerUrl = {
+                        showSettings = false
+                        appState = AppState.ServerSetup
+                    }
                 )
             }
         }
@@ -156,13 +183,14 @@ fun mainNavigation(
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
     repository: FamilyRepository,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onLogout: () -> Unit
 ) {
     when (selectedTab) {
         0 -> HomeScreen(repository = repository, onOpenSettings = onOpenSettings)
         1 -> FamilyScreen(repository = repository)
         2 -> HelpScreen()
-        3 -> profileScreen(repository = repository, onOpenSettings = onOpenSettings)
+        3 -> profileScreen(repository = repository, onOpenSettings = onOpenSettings, onLogout = onLogout)
     }
 }
 
@@ -170,8 +198,11 @@ fun mainNavigation(
 @Composable
 fun profileScreen(
     repository: FamilyRepository,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onLogout: () -> Unit
 ) {
+    val username by repository.currentUsername.collectAsState()
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -203,11 +234,11 @@ fun profileScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Александр Петров",
+                text = username.ifBlank { "Пользователь" },
                 style = MaterialTheme.typography.headlineSmall
             )
             Text(
-                text = "+7 (999) 123-45-67",
+                text = "Авторизован в системе",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -216,10 +247,7 @@ fun profileScreen(
             
             // Кнопка выхода
             OutlinedButton(
-                onClick = {
-                    repository.logout()
-                    // Здесь должна быть логика возврата к экрану аутентификации
-                },
+                onClick = onLogout,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(Icons.Outlined.Logout, contentDescription = null, modifier = Modifier.size(20.dp))
