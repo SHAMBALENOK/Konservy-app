@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.bankapp.data.repository.FamilyRepository
 import kotlinx.coroutines.launch
 
 /**
@@ -35,11 +36,19 @@ fun PinEntryScreen(
     
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val repository = remember { FamilyRepository() }
     
     // Получаем сохранённый PIN
     val prefs: SharedPreferences = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
     val savedPin = prefs.getString("pin_code", "") ?: ""
     val savedUsername = prefs.getString("username", "") ?: ""
+    
+    // Восстанавливаем имя пользователя в репозитории при входе через PIN
+    LaunchedEffect(savedUsername) {
+        if (savedUsername.isNotEmpty()) {
+            repository.currentUsername.value = savedUsername
+        }
+    }
 
     Scaffold(
         topBar = {

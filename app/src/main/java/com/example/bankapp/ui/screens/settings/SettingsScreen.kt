@@ -35,13 +35,7 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onChangeServerUrl: () -> Unit
 ) {
-    var serverUrl by remember { mutableStateOf(repository.getServerUrl()) }
-    var isEditingUrl by remember { mutableStateOf(false) }
-    var showSaveConfirmation by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     
     Scaffold(
         topBar = {
@@ -68,87 +62,8 @@ fun SettingsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Секция: Сервер
+            // Секция: Информация о сервере
             SettingsSection(title = "Сервер", icon = Icons.Default.Dns) {
-                ServerUrlSetting(
-                    serverUrl = serverUrl,
-                    isEditing = isEditingUrl,
-                    onEditToggle = { isEditingUrl = !isEditingUrl },
-                    onUrlChange = { serverUrl = it },
-                    onSave = {
-                        if (serverUrl.isBlank()) {
-                            errorMessage = "URL сервера не может быть пустым"
-                            return@ServerUrlSetting
-                        }
-                        
-                        // Валидация URL
-                        if (!serverUrl.startsWith("http://") && !serverUrl.startsWith("https://")) {
-                            errorMessage = "URL должен начинаться с http:// или https://"
-                            return@ServerUrlSetting
-                        }
-                        
-                        repository.updateServerUrl(serverUrl)
-                        isEditingUrl = false
-                        showSaveConfirmation = true
-                        errorMessage = null
-                    },
-                    errorMessage = errorMessage
-                )
-                
-                if (showSaveConfirmation) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Surface(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        shape = MaterialTheme.shapes.small
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "Сервер обновлён: $serverUrl",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-                            TextButton(onClick = { showSaveConfirmation = false }) {
-                                Text("OK")
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Секция: Информация о приложении
-            SettingsSection(title = "О приложении", icon = Icons.Default.Info) {
-                SettingItem(
-                    title = "Версия приложения",
-                    subtitle = "1.0.0",
-                    icon = Icons.Default.Android
-                )
-                
-                SettingItem(
-                    title = "API версия",
-                    subtitle = ApiConfig.API_VERSION,
-                    icon = Icons.Default.Code
-                )
-                
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
-                
                 SettingItem(
                     title = "Текущий сервер",
                     subtitle = repository.getServerUrl(),
@@ -169,6 +84,32 @@ fun SettingsScreen(
                             )
                         }
                     }
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                OutlinedButton(
+                    onClick = onChangeServerUrl,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Dns, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Сменить сервер")
+                }
+            }
+            
+            // Секция: Информация о приложении
+            SettingsSection(title = "О приложении", icon = Icons.Default.Info) {
+                SettingItem(
+                    title = "Версия приложения",
+                    subtitle = "1.0.0",
+                    icon = Icons.Default.Android
+                )
+                
+                SettingItem(
+                    title = "API версия",
+                    subtitle = ApiConfig.API_VERSION,
+                    icon = Icons.Default.Code
                 )
             }
             
@@ -402,100 +343,6 @@ fun SettingItem(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun ServerUrlSetting(
-    serverUrl: String,
-    isEditing: Boolean,
-    onEditToggle: () -> Unit,
-    onUrlChange: (String) -> Unit,
-    onSave: () -> Unit,
-    errorMessage: String? = null
-) {
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "URL сервера API",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                if (isEditing) {
-                    OutlinedTextField(
-                        value = serverUrl,
-                        onValueChange = onUrlChange,
-                        placeholder = { Text("http://localhost:8080") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = errorMessage != null,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                        )
-                    )
-                    
-                    if (errorMessage != null) {
-                        Text(
-                            text = errorMessage,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                } else {
-                    Text(
-                        text = serverUrl,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            if (isEditing) {
-                IconButton(onClick = onSave) {
-                    Icon(
-                        Icons.Default.Check,
-                        contentDescription = "Сохранить",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-                IconButton(onClick = onEditToggle) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "Отмена",
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
-            } else {
-                IconButton(onClick = onEditToggle) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Изменить",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-        }
-        
-        if (!isEditing) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Измените URL сервера для подключения к другому экземпляру API",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
