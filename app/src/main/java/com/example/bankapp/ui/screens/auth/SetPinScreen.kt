@@ -16,11 +16,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import android.content.Context
-import android.content.SharedPreferences
 
 /**
  * Экран установки PIN-кода для входа в приложение
  * Используется только один раз после регистрации
+ * При первой регистрации также показывает настройку сервера
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,9 +35,29 @@ fun SetPinScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var step by remember { mutableStateOf(PinSetupStep.ENTER_PIN) }
+    var showServerSetup by remember { mutableStateOf(false) }
     
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    
+    // Проверяем, была ли уже пройдена настройка сервера
+    val prefs: android.content.SharedPreferences = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
+    val hasSeenSetup = prefs.getBoolean("has_seen_setup", false)
+    
+    // Если это первая регистрация, показываем настройку сервера перед установкой PIN
+    if (!hasSeenSetup && showServerSetup) {
+        ServerSetupScreen(
+            onServerConfigured = { 
+                // Сервер настроен - возвращаемся к установке PIN
+                showServerSetup = false 
+            },
+            onSkipSetup = {
+                // Пропустить настройку - используем URL по умолчанию
+                showServerSetup = false
+            }
+        )
+        return
+    }
 
     Scaffold(
         topBar = {
@@ -186,6 +206,11 @@ fun SetPinScreen(
                             errorMessage = "PIN-код должен содержать 4 цифры"
                             return@Button
                         }
+                        // Если это первая регистрация, сначала показываем настройку сервера
+                        if (!hasSeenSetup) {
+                            showServerSetup = true
+                            return@Button
+                        }
                         step = PinSetupStep.CONFIRM_PIN
                     } else {
                         if (confirmPin.length != 4) {
@@ -202,7 +227,7 @@ fun SetPinScreen(
                         isLoading = true
                         scope.launch {
                             // Сохраняем PIN и username в SharedPreferences
-                            val prefs: SharedPreferences = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
+                            val prefs: android.content.SharedPreferences = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
                             prefs.edit()
                                 .putString("pin_code", pin)
                                 .putString("username", username)
@@ -226,7 +251,7 @@ fun SetPinScreen(
                 } else {
                     Text(
                         text = when (step) {
-                            PinSetupStep.ENTER_PIN -> "Продолжить"
+                            PinSetupStep.ENTER_PIN -> if (!hasSeenSetup) "Настроить сервер" else "Продолжить"
                             PinSetupStep.CONFIRM_PIN -> "Подтвердить"
                         },
                         style = MaterialTheme.typography.titleMedium
