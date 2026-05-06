@@ -11,11 +11,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.bankapp.data.api.ApiConfig
 import com.example.bankapp.data.repository.FamilyRepository
+import com.example.bankapp.ui.screens.auth.ServerSetupScreen
 import kotlinx.coroutines.launch
 
 /**
@@ -32,8 +34,26 @@ fun SettingsScreen(
     var isEditingUrl by remember { mutableStateOf(false) }
     var showSaveConfirmation by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showServerSetup by remember { mutableStateOf(false) }
     
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    
+    // Если показана настройка сервера, отображаем ServerSetupScreen
+    if (showServerSetup) {
+        ServerSetupScreen(
+            onServerConfigured = { 
+                // Сервер настроен - обновляем URL и закрываем экран настройки
+                serverUrl = ApiConfig.baseUrl
+                showServerSetup = false
+            },
+            onSkipSetup = {
+                // Пропустить настройку - закрываем экран
+                showServerSetup = false
+            }
+        )
+        return
+    }
     
     Scaffold(
         topBar = {
@@ -205,6 +225,22 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Проверить подключение")
                 }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                OutlinedButton(
+                    onClick = {
+                        // Смена сервера - показать экран настройки
+                        showServerSetup = true
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Dns, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Сменить сервер")
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
                 
                 OutlinedButton(
                     onClick = {

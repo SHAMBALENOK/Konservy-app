@@ -76,33 +76,29 @@ sealed class AppState {
 
 @Composable
 fun bankApp() {
-    var appState by remember { mutableStateOf<AppState>(AppState.Login) }
+    val context = LocalContext.current
+    val prefs: SharedPreferences = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
+    val isPinSet = prefs.getBoolean("is_pin_set", false)
+    
+    // Определяем начальное состояние на основе наличия PIN
+    val initialState = if (isPinSet) AppState.PinEntry else AppState.Login
+    
+    var appState by remember { mutableStateOf<AppState>(initialState) }
     var selectedTab by remember { mutableStateOf(0) }
     var showSettings by remember { mutableStateOf(false) }
     var username by remember { mutableStateOf("") }
-    val context = LocalContext.current
     
     val repository = remember { FamilyRepository() }
-    
-    // Проверяем, установлен ли PIN
-    val prefs: SharedPreferences = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
-    val isPinSet = prefs.getBoolean("is_pin_set", false)
-    val savedUsername = prefs.getString("username", "") ?: ""
 
     when (appState) {
         is AppState.Login -> {
-            if (isPinSet) {
-                // Если PIN уже установлен, показываем экран ввода PIN
-                appState = AppState.PinEntry
-            } else {
-                LoginScreen(
-                    onLoginSuccess = { 
-                        // После успешного входа по username/password - переходим в приложение
-                        appState = AppState.Authenticated 
-                    },
-                    onNavigateToRegister = { appState = AppState.Register }
-                )
-            }
+            LoginScreen(
+                onLoginSuccess = { 
+                    // После успешного входа по username/password - переходим в приложение
+                    appState = AppState.Authenticated 
+                },
+                onNavigateToRegister = { appState = AppState.Register }
+            )
         }
         is AppState.PinEntry -> {
             PinEntryScreen(

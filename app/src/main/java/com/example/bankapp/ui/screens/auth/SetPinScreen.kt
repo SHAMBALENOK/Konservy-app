@@ -35,7 +35,6 @@ fun SetPinScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var step by remember { mutableStateOf(PinSetupStep.ENTER_PIN) }
-    var showServerSetup by remember { mutableStateOf(false) }
     
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -45,15 +44,17 @@ fun SetPinScreen(
     val hasSeenSetup = prefs.getBoolean("has_seen_setup", false)
     
     // Если это первая регистрация, показываем настройку сервера перед установкой PIN
-    if (!hasSeenSetup && showServerSetup) {
+    if (!hasSeenSetup && step == PinSetupStep.ENTER_PIN && pin.length == 4) {
         ServerSetupScreen(
             onServerConfigured = { 
-                // Сервер настроен - возвращаемся к установке PIN
-                showServerSetup = false 
+                // Сервер настроен - помечаем настройку как пройденную и продолжаем
+                prefs.edit().putBoolean("has_seen_setup", true).apply()
+                step = PinSetupStep.CONFIRM_PIN
             },
             onSkipSetup = {
                 // Пропустить настройку - используем URL по умолчанию
-                showServerSetup = false
+                prefs.edit().putBoolean("has_seen_setup", true).apply()
+                step = PinSetupStep.CONFIRM_PIN
             }
         )
         return
@@ -206,11 +207,7 @@ fun SetPinScreen(
                             errorMessage = "PIN-код должен содержать 4 цифры"
                             return@Button
                         }
-                        // Если это первая регистрация, сначала показываем настройку сервера
-                        if (!hasSeenSetup) {
-                            showServerSetup = true
-                            return@Button
-                        }
+                        // Переходим к подтверждению PIN
                         step = PinSetupStep.CONFIRM_PIN
                     } else {
                         if (confirmPin.length != 4) {
@@ -251,7 +248,7 @@ fun SetPinScreen(
                 } else {
                     Text(
                         text = when (step) {
-                            PinSetupStep.ENTER_PIN -> if (!hasSeenSetup) "Настроить сервер" else "Продолжить"
+                            PinSetupStep.ENTER_PIN -> "Продолжить"
                             PinSetupStep.CONFIRM_PIN -> "Подтвердить"
                         },
                         style = MaterialTheme.typography.titleMedium
