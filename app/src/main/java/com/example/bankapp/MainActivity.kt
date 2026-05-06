@@ -82,9 +82,19 @@ fun bankApp() {
     val context = LocalContext.current
     val prefs: SharedPreferences = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
     val isPinSet = prefs.getBoolean("is_pin_set", false)
+    val hasSeenSetup = prefs.getBoolean("has_seen_setup", false)
     
-    // Определяем начальное состояние на основе наличия PIN
-    var appState by remember { mutableStateOf<AppState>(if (isPinSet) AppState.PinEntry else AppState.Login) }
+    // Определяем начальное состояние на основе наличия PIN и настройки сервера
+    var appState by remember { 
+        mutableStateOf<AppState>(
+            if (isPinSet) {
+                // Если PIN установлен, но сервер не настроен - показываем настройку сервера
+                if (!hasSeenSetup) AppState.ServerSetup else AppState.PinEntry
+            } else {
+                AppState.Login
+            }
+        )
+    }
     var selectedTab by remember { mutableStateOf(0) }
     var showSettings by remember { mutableStateOf(false) }
     var username by remember { mutableStateOf("") }

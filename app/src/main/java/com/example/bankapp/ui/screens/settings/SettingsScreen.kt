@@ -158,17 +158,6 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 OutlinedButton(
-                    onClick = onChangeServerUrl,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.Dns, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Сменить сервер")
-                }
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                OutlinedButton(
                     onClick = {
                         // Сброс настроек
                         repository.updateServerUrl("http://localhost:8080")

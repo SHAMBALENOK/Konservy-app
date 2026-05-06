@@ -3,27 +3,19 @@
 *.class
 *.o
 *.obj
-*.exe
+*.out
 *.dll
 *.so
 *.a
-*.out
-build/
-dist/
 
 # Dependencies
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-.coverage
-coverage/
-htmlcov/
+.gradle/
+build/
+dist/
 
 # Logs and temp files
 *.log
 *.tmp
-*.swp
-*.swo
 
 # Environment
 .env
@@ -33,8 +25,23 @@ htmlcov/
 # Editors
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # System files
 .DS_Store
 Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Python specific (if applicable)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.mypy_cache/
+.pytest_cache/
 ```
