@@ -37,6 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.bankapp.data.api.ApiClientProvider
+import com.example.bankapp.data.api.ApiConfig
 import com.example.bankapp.data.repository.FamilyRepository
 import com.example.bankapp.ui.screens.HomeScreen
 import com.example.bankapp.ui.screens.auth.LoginScreen
@@ -52,6 +54,10 @@ import com.example.bankapp.ui.theme.BankAppTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Инициализируем ApiConfig с контекстом приложения
+        ApiConfig.init(applicationContext)
+        
         setContent {
             BankAppTheme {
                 Surface(
@@ -83,14 +89,19 @@ fun bankApp() {
     val prefs: SharedPreferences = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
     val isPinSet = prefs.getBoolean("is_pin_set", false)
     val hasSeenSetup = prefs.getBoolean("has_seen_setup", false)
+    val serverUrl = prefs.getString("server_url", null)
     
     // Определяем начальное состояние на основе наличия PIN и настройки сервера
     var appState by remember { 
         mutableStateOf<AppState>(
-            if (isPinSet) {
-                // Если PIN установлен, но сервер не настроен - показываем настройку сервера
-                if (!hasSeenSetup) AppState.ServerSetup else AppState.PinEntry
+            if (!hasSeenSetup && serverUrl.isNullOrBlank()) {
+                // Если настройка сервера не пройдена и URL не сохранён - показываем настройку сервера
+                AppState.ServerSetup
+            } else if (isPinSet) {
+                // Если PIN установлен - показываем ввод PIN
+                AppState.PinEntry
             } else {
+                // Иначе - экран входа
                 AppState.Login
             }
         )
@@ -102,6 +113,20 @@ fun bankApp() {
     val repository = remember { FamilyRepository(context) }
 
     when (appState) {
+        is AppState.ServerSetup -> {
+            ServerSetupScreen(
+                onServerConfigured = { 
+                    // Сервер настроен - помечаем настройку как пройденную и переходим в приложение
+                    prefs.edit().putBoolean("has_seen_setup", true).apply()
+                    appState = AppState.Authenticated
+                },
+                onSkipSetup = {
+                    // Пропустить настройку - используем URL по умолчанию
+                    prefs.edit().putBoolean("has_seen_setup", true).apply()
+                    appState = AppState.Authenticated
+                }
+            )
+        }
         is AppState.Login -> {
             LoginScreen(
                 onLoginSuccess = { 
@@ -145,20 +170,6 @@ fun bankApp() {
                     }
                 },
                 onCancel = { appState = AppState.Login }
-            )
-        }
-        is AppState.ServerSetup -> {
-            ServerSetupScreen(
-                onServerConfigured = { 
-                    // Сервер настроен - помечаем настройку как пройденную и переходим в приложение
-                    prefs.edit().putBoolean("has_seen_setup", true).apply()
-                    appState = AppState.Authenticated
-                },
-                onSkipSetup = {
-                    // Пропустить настройку - используем URL по умолчанию
-                    prefs.edit().putBoolean("has_seen_setup", true).apply()
-                    appState = AppState.Authenticated
-                }
             )
         }
         is AppState.Authenticated -> {
