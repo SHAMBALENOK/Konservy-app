@@ -10,7 +10,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,29 +46,24 @@ fun HomeScreen(
     repository: FamilyRepository,
     onOpenSettings: () -> Unit
 ) {
-    val accounts = listOf(
-        AccountCard(1, "Основной счёт", "**** 4521", 125430.50, "RUB", Color(0xFF1976D2)),
-        AccountCard(2, "Сберегательный", "**** 8832", 500000.00, "RUB", Color(0xFF00897B)),
-        AccountCard(3, "Кредитная карта", "**** 1234", -15000.00, "RUB", Color(0xFFE91E63))
-    )
-
-    val transactions = listOf(
-        TransactionItem(1, "Перевод от Иванова А.", "Сегодня", 5000.0, true) {
-            Icon(Icons.Outlined.ArrowDownward, contentDescription = null, tint = SuccessGreen)
-        },
-        TransactionItem(2, "Оплата ЖКХ", "Вчера", -3500.0, false) {
-            Icon(Icons.Outlined.Home, contentDescription = null, tint = WarningOrange)
-        },
-        TransactionItem(3, "Покупка в магазине", "Вчера", -2150.0, false) {
-            Icon(Icons.Outlined.ShoppingCart, contentDescription = null, tint = TextSecondary)
-        },
-        TransactionItem(4, "Зарплата", "15 дек", 85000.0, true) {
-            Icon(Icons.Outlined.ArrowDownward, contentDescription = null, tint = SuccessGreen)
-        },
-        TransactionItem(5, "Кафе \"Центральное\"", "14 дек", -1200.0, false) {
-            Icon(Icons.Outlined.Restaurant, contentDescription = null, tint = TextSecondary)
-        }
-    )
+    // Наблюдаем за состоянием счетов и именем пользователя
+    val accountsState by repository.accounts.collectAsState()
+    val username by repository.currentUsername.collectAsState()
+    
+    // Формируем список счетов для отображения
+    val accounts = accountsState.map { account ->
+        AccountCard(
+            id = account.id,
+            accountName = account.accountName,
+            accountNumber = account.accountNumber,
+            balance = account.balance,
+            currency = account.currency,
+            cardColor = account.cardColor
+        )
+    }
+    
+    // Заглушка для транзакций (будет загружаться с сервера)
+    val transactions = listOf<TransactionItem>()
 
     Scaffold(
         topBar = {
@@ -132,12 +127,14 @@ fun HomeScreen(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Добрый день, Александр!",
+                    text = "Добрый день, ${username.ifBlank { "Пользователь" }}!",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
+                // Вычисляем общий баланс
+                val totalBalance = accounts.sumOf { it.balance }
                 Text(
-                    text = "Общий баланс: 610 430,50 ₽",
+                    text = "Общий баланс: ${String.format("%,.2f", totalBalance)} ${accounts.firstOrNull()?.currency ?: "RUB"}",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary
                 )

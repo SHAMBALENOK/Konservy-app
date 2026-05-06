@@ -20,6 +20,10 @@ import com.example.bankapp.data.repository.FamilyRepository
 import com.example.bankapp.ui.screens.auth.ServerSetupScreen
 import kotlinx.coroutines.launch
 
+// Дополнительные импорты для Card
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+
 /**
  * Экран настроек приложения
  * Позволяет указать URL сервера для API запросов
@@ -28,32 +32,16 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsScreen(
     repository: FamilyRepository,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onChangeServerUrl: () -> Unit
 ) {
     var serverUrl by remember { mutableStateOf(repository.getServerUrl()) }
     var isEditingUrl by remember { mutableStateOf(false) }
     var showSaveConfirmation by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showServerSetup by remember { mutableStateOf(false) }
     
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    
-    // Если показана настройка сервера, отображаем ServerSetupScreen
-    if (showServerSetup) {
-        ServerSetupScreen(
-            onServerConfigured = { 
-                // Сервер настроен - обновляем URL и закрываем экран настройки
-                serverUrl = ApiConfig.baseUrl
-                showServerSetup = false
-            },
-            onSkipSetup = {
-                // Пропустить настройку - закрываем экран
-                showServerSetup = false
-            }
-        )
-        return
-    }
     
     Scaffold(
         topBar = {
@@ -229,10 +217,7 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 OutlinedButton(
-                    onClick = {
-                        // Смена сервера - показать экран настройки
-                        showServerSetup = true
-                    },
+                    onClick = onChangeServerUrl,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(Icons.Default.Dns, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -253,6 +238,64 @@ fun SettingsScreen(
                     Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Сбросить настройки")
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Тестовая функция: накрутить деньги на счёт
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "💰 Тест: Начислить средства",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Добавить 10 000 ₽ на первый счёт для тестирования",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    val accounts = repository.accounts.value
+                                    if (accounts.isNotEmpty()) {
+                                        val firstAccount = accounts.first()
+                                        // Используем API для пополнения счёта
+                                        repository.deposit(
+                                            accountId = firstAccount.id.toString(),
+                                            amount = 10000.0,
+                                            description = "Тестовое начисление из настроек"
+                                        )
+                                    }
+                                }
+                            },
+                            modifier = Modifier.align(androidx.compose.ui.Alignment.End),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("+10 000 ₽")
+                        }
+                    }
                 }
             }
             
