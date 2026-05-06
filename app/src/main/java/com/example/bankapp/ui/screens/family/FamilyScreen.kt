@@ -25,7 +25,7 @@ import com.example.bankapp.ui.theme.WarningOrange
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FamilyScreen(
-    repository: FamilyRepository = remember { FamilyRepository() }
+    repository: FamilyRepository
 ) {
     val familyMembers by repository.familyMembers.collectAsState()
     val suspiciousOperations by repository.suspiciousOperations.collectAsState()

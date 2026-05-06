@@ -1,5 +1,6 @@
 package com.example.bankapp.data.repository
 
+import android.content.Context
 import com.example.bankapp.data.api.*
 import com.example.bankapp.data.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +13,7 @@ import java.util.UUID
  * Репозиторий для управления семейными счетами и уведомлениями
  * Интегрирован с API для выполнения реальных запросов
  */
-class FamilyRepository {
+class FamilyRepository(private val context: Context) {
     
     private val apiClient = ApiClientProvider.client
 
@@ -49,7 +50,7 @@ class FamilyRepository {
     fun setUsername(username: String) {
         _currentUsername.value = username
         // Сохраняем имя в SharedPreferences для быстрого доступа
-        val prefs = android.content.Context.getSharedPreferences("bank_app_prefs", android.content.Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
         prefs.edit().putString("username", username).apply()
     }
     

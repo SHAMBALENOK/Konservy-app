@@ -36,7 +36,7 @@ fun PinEntryScreen(
     
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val repository = remember { FamilyRepository() }
+    val repository = remember { FamilyRepository(context) }
     
     // Получаем сохранённый PIN
     val prefs: SharedPreferences = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
