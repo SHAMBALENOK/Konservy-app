@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Экран настройки сервера для подключения к API
- * Отображается перед регистрацией или входом
+ * Отображается только при первой регистрации после ввода PIN
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +35,6 @@ fun ServerSetupScreen(
     var serverUrl by remember { mutableStateOf(ApiConfig.baseUrl) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showServerUrl by remember { mutableStateOf(true) }
     
     val scope = rememberCoroutineScope()
     

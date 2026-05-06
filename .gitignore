@@ -1,28 +1,80 @@
-```kotlin
-# Gradle
+```
+# Compiled and build artifacts
+*.class
+*.o
+*.obj
+*.out
+*.so
+*.a
+*.dll
+*.exe
+
+# Dependencies
 .gradle/
 build/
+dist/
 
-# Android
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+coverage/
+htmlcov/
+*.coverage
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+.Python
+*.so
+*.egg-info/
+.eggs/
+
+# Java/Kotlin specific
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+*.iws
+*.ipr
+
+# Android specific
 *.apk
 *.aar
-*.dex
-
-# IDE
-.idea/
-*.iml
-*.ipr
-*.iws
-.vscode/
-
-# Logs
-*.log
-
-# Temp files
-*.tmp
-*.temp
-*~
-
-# Local configuration
 local.properties
+captures/
+.externalNativeBuild
+
+# MyPy cache
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pytest cache
+.pytest_cache/
+
+# Julia packages
+julia-*/
+
+# Zig build directories
+zig*/
 ```
