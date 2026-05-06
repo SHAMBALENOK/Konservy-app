@@ -99,7 +99,8 @@ fun bankApp() {
     var showSettings by remember { mutableStateOf(false) }
     var username by remember { mutableStateOf("") }
     
-    val repository = remember { FamilyRepository() }
+    val context = LocalContext.current
+    val repository = remember { FamilyRepository(context) }
 
     when (appState) {
         is AppState.Login -> {
