@@ -47,6 +47,14 @@ fun PinEntryScreen(
     LaunchedEffect(savedUsername) {
         if (savedUsername.isNotEmpty()) {
             repository.setUsername(savedUsername)
+        } else {
+            // Если имя не сохранено, пытаемся получить его из токена
+            scope.launch {
+                val username = repository.fetchCurrentUsername()
+                if (username.isNotEmpty()) {
+                    prefs.edit().putString("username", username).apply()
+                }
+            }
         }
     }
 

@@ -48,6 +48,25 @@ class FamilyRepository {
      */
     fun setUsername(username: String) {
         _currentUsername.value = username
+        // Сохраняем имя в SharedPreferences для быстрого доступа
+        val prefs = android.content.Context.getSharedPreferences("bank_app_prefs", android.content.Context.MODE_PRIVATE)
+        prefs.edit().putString("username", username).apply()
+    }
+    
+    suspend fun fetchCurrentUsername(): String {
+        return try {
+            // Пытаемся получить информацию о текущем пользователе через API
+            val accountsResult = apiClient.getAccounts()
+            if (accountsResult.isSuccess) {
+                // Если есть счета, значит пользователь авторизован
+                // Возвращаем текущее значение или пустую строку
+                _currentUsername.value.ifBlank { "user" }
+            } else {
+                ""
+            }
+        } catch (e: Exception) {
+            ""
+        }
     }
     
     // Счета пользователя
