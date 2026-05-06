@@ -101,7 +101,7 @@ fun bankApp() {
                 // Если PIN установлен - показываем ввод PIN
                 AppState.PinEntry
             } else {
-                // Иначе - экран входа
+                // Иначе - экран входа (не регистрации!)
                 AppState.Login
             }
         )
@@ -116,14 +116,14 @@ fun bankApp() {
         is AppState.ServerSetup -> {
             ServerSetupScreen(
                 onServerConfigured = { 
-                    // Сервер настроен - помечаем настройку как пройденную и переходим в приложение
+                    // Сервер настроен - помечаем настройку как пройденную и переходим к регистрации/входу
                     prefs.edit().putBoolean("has_seen_setup", true).apply()
-                    appState = AppState.Authenticated
+                    appState = AppState.Login  // Переходим к экрану входа/регистрации
                 },
                 onSkipSetup = {
-                    // Пропустить настройку - используем URL по умолчанию
+                    // Пропустить настройку - используем URL по умолчанию и переходим к входу
                     prefs.edit().putBoolean("has_seen_setup", true).apply()
-                    appState = AppState.Authenticated
+                    appState = AppState.Login  // Переходим к экрану входа/регистрации
                 }
             )
         }
