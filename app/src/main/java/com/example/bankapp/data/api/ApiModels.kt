@@ -1,5 +1,7 @@
 package com.example.bankapp.data.api
 
+import android.content.Context
+import android.content.SharedPreferences
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -10,6 +12,21 @@ object ApiConfig {
     // Базовый URL сервера - может быть изменён в настройках приложения
     var baseUrl: String = "http://localhost:8080"
         private set
+    
+    private var prefs: SharedPreferences? = null
+    
+    /**
+     * Инициализация с контекстом для доступа к SharedPreferences
+     */
+    fun init(context: Context) {
+        prefs = context.getSharedPreferences("bank_app_prefs", Context.MODE_PRIVATE)
+        // Загружаем сохранённый URL при инициализации
+        prefs?.getString("server_url", null)?.let { savedUrl ->
+            if (savedUrl.isNotBlank()) {
+                baseUrl = savedUrl
+            }
+        }
+    }
     
     const val API_VERSION = "v1"
     const val BASE_PATH = "/api/$API_VERSION"
@@ -24,6 +41,8 @@ object ApiConfig {
      */
     fun updateBaseUrl(newUrl: String) {
         baseUrl = newUrl.trimEnd('/')
+        // Сохраняем URL в SharedPreferences
+        prefs?.edit()?.putString("server_url", baseUrl)?.apply()
     }
     
     /**
