@@ -42,7 +42,6 @@ import com.example.bankapp.ui.screens.auth.LoginScreen
 import com.example.bankapp.ui.screens.auth.PinEntryScreen
 import com.example.bankapp.ui.screens.auth.RegisterScreen
 import com.example.bankapp.ui.screens.auth.SetPinScreen
-import com.example.bankapp.ui.screens.auth.ServerSetupScreen
 import com.example.bankapp.ui.screens.family.FamilyScreen
 import com.example.bankapp.ui.screens.help.HelpScreen
 import com.example.bankapp.ui.screens.settings.SettingsScreen
@@ -68,7 +67,6 @@ class MainActivity : ComponentActivity() {
  * Основное состояние приложения
  */
 sealed class AppState {
-    object ServerSetup : AppState()  // Настройка сервера (перед регистрацией/входом)
     object Login : AppState()
     object Register : AppState()
     object SetPin : AppState()
@@ -78,7 +76,7 @@ sealed class AppState {
 
 @Composable
 fun bankApp() {
-    var appState by remember { mutableStateOf<AppState>(AppState.ServerSetup) }
+    var appState by remember { mutableStateOf<AppState>(AppState.Login) }
     var selectedTab by remember { mutableStateOf(0) }
     var showSettings by remember { mutableStateOf(false) }
     var username by remember { mutableStateOf("") }
@@ -92,18 +90,6 @@ fun bankApp() {
     val savedUsername = prefs.getString("username", "") ?: ""
 
     when (appState) {
-        is AppState.ServerSetup -> {
-            ServerSetupScreen(
-                onServerConfigured = { 
-                    // Сервер настроен - переходим к регистрации
-                    appState = AppState.Register 
-                },
-                onSkipSetup = {
-                    // Пропустить настройку - используем URL по умолчанию
-                    appState = AppState.Login
-                }
-            )
-        }
         is AppState.Login -> {
             if (isPinSet) {
                 // Если PIN уже установлен, показываем экран ввода PIN
@@ -143,7 +129,9 @@ fun bankApp() {
             SetPinScreen(
                 username = username,
                 onPinSetSuccess = { 
-                    // PIN установлен успешно - переходим в приложение
+                    // PIN установлен успешно - помечаем, что настройка была пройдена
+                    prefs.edit().putBoolean("has_seen_setup", true).apply()
+                    // Переходим в приложение
                     appState = AppState.Authenticated 
                 },
                 onCancel = { appState = AppState.Login }
