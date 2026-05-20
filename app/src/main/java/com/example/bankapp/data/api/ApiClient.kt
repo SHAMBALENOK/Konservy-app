@@ -171,69 +171,75 @@ class ApiClient {
     
     // ==================== FIDO2 / PASSKEYS ====================
     
-    suspend fun getFidoRegisterChallenge(username: String? = null): Result<Map<String, Any>> {
-        return makeAuthenticatedRequest(
+    suspend fun getFidoRegisterChallenge(userId: String, username: String): Result<Map<String, Any>> {
+        return makeRequest(
             method = HttpMethod.Post,
-            path = "/auth/fido/register/challenge",
-            body = FidoChallengeRequest(username)
+            path = "/auth/fido/register/challenge?user_id=$userId&username=$username",
+            body = null,
+            requiresAuth = false
         )
     }
     
-    suspend fun verifyFidoRegister(request: FidoVerificationRequest): Result<TokenResponse> {
+    suspend fun verifyFidoRegister(userId: String, deviceId: String?, request: Map<String, Any>): Result<Map<String, Any>> {
+        val deviceParam = deviceId?.let { "&device_id=$it" } ?: ""
         return makeRequest(
             method = HttpMethod.Post,
-            path = "/auth/fido/register/verify",
+            path = "/auth/fido/register/verify?user_id=$userId$deviceParam",
             body = request,
             requiresAuth = false
         )
     }
     
-    suspend fun getFidoLoginChallenge(): Result<Map<String, Any>> {
+    suspend fun getFidoLoginChallenge(userId: String): Result<Map<String, Any>> {
         return makeRequest(
             method = HttpMethod.Post,
-            path = "/auth/fido/login/challenge",
-            body = FidoChallengeRequest(),
+            path = "/auth/fido/login/challenge?user_id=$userId",
+            body = null,
             requiresAuth = false
         )
     }
     
-    suspend fun verifyFidoLogin(request: FidoAssertionRequest): Result<TokenResponse> {
+    suspend fun verifyFidoLogin(userId: String, request: Map<String, Any>): Result<TokenResponse> {
         return makeRequest(
             method = HttpMethod.Post,
-            path = "/auth/fido/login/verify",
+            path = "/auth/fido/login/verify?user_id=$userId",
             body = request,
             requiresAuth = false
         )
     }
     
-    suspend fun getFidoCredentials(): Result<List<FidoCredential>> {
+    suspend fun getFidoCredentials(userId: String): Result<List<Map<String, Any>>> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Get,
-            path = "/auth/fido/credentials"
+            path = "/auth/fido/credentials?user_id=$userId"
         )
     }
     
-    suspend fun deleteFidoCredential(credentialId: String): Result<Unit> {
+    suspend fun deleteFidoCredential(userId: String, credentialId: String): Result<Unit> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Delete,
-            path = "/auth/fido/credentials/$credentialId"
+            path = "/auth/fido/credentials/$credentialId?user_id=$userId"
         )
     }
     
     // ==================== ACCOUNTS ====================
     
-    suspend fun createAccount(request: CreateAccountRequest): Result<AccountDto> {
+    suspend fun createAccount(userId: String, currency: String = "USD", initialBalance: String = "0.00"): Result<AccountDto> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Post,
             path = "/accounts/",
-            body = request
+            body = mapOf(
+                "user_id" to userId,
+                "currency" to currency,
+                "initial_balance" to initialBalance
+            )
         )
     }
     
-    suspend fun getAccounts(page: Int = 1, pageSize: Int = 20): Result<PageResponse<AccountDto>> {
+    suspend fun getAccounts(page: Int = 0, pageSize: Int = 20): Result<AccountListResponse> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Get,
-            path = "/accounts/?page=$page&pageSize=$pageSize"
+            path = "/accounts/?skip=$page&limit=$pageSize"
         )
     }
     
@@ -261,28 +267,38 @@ class ApiClient {
     
     suspend fun deposit(
         accountId: String, 
-        amount: Double, 
+        amount: String, 
         idempotencyKey: String,
-        description: String? = null
+        description: String? = null,
+        reference: String? = null
     ): Result<AccountDto> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Post,
             path = "/accounts/$accountId/deposit",
-            body = AmountRequest(amount, description),
+            body = mapOf(
+                "amount" to amount,
+                "description" to (description ?: ""),
+                "reference" to (reference ?: "")
+            ).filterValues { it.isNotEmpty() },
             additionalHeaders = getIdempotencyHeaders(idempotencyKey)
         )
     }
     
     suspend fun withdraw(
         accountId: String, 
-        amount: Double, 
+        amount: String, 
         idempotencyKey: String,
-        description: String? = null
+        description: String? = null,
+        reference: String? = null
     ): Result<AccountDto> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Post,
             path = "/accounts/$accountId/withdraw",
-            body = AmountRequest(amount, description),
+            body = mapOf(
+                "amount" to amount,
+                "description" to (description ?: ""),
+                "reference" to (reference ?: "")
+            ).filterValues { it.isNotEmpty() },
             additionalHeaders = getIdempotencyHeaders(idempotencyKey)
         )
     }
@@ -297,7 +313,6 @@ class ApiClient {
     // ==================== TRANSACTIONS ====================
     
     suspend fun transfer(
-        fromAccountId: String,
         toAccountId: String,
         amount: Double,
         idempotencyKey: String,
@@ -307,33 +322,38 @@ class ApiClient {
         return makeAuthenticatedRequest(
             method = HttpMethod.Post,
             path = "/transactions/transfer?current_user=$currentUserId",
-            body = TransferRequest(fromAccountId, toAccountId, amount, description),
+            body = TransferRequest(toAccountId, amount, description = description),
             additionalHeaders = getIdempotencyHeaders(idempotencyKey)
         )
     }
     
     suspend fun depositTransaction(
         accountId: String,
-        amount: Double,
+        amount: String,
         idempotencyKey: String,
-        description: String? = null
+        currency: String = "USD",
+        description: String? = null,
+        reference: String? = null
     ): Result<TransactionDto> {
+        val params = buildString {
+            append("account_id=$accountId")
+            append("&amount=$amount")
+            append("&currency=$currency")
+            description?.let { append("&description=${it.take(500)}") }
+            reference?.let { append("&reference=${it.take(255)}") }
+        }
         return makeAuthenticatedRequest(
             method = HttpMethod.Post,
-            path = "/transactions/deposit",
-            body = mapOf(
-                "account_id" to accountId,
-                "amount" to amount,
-                "description" to (description ?: "")
-            ),
+            path = "/transactions/deposit?$params",
+            body = null,
             additionalHeaders = getIdempotencyHeaders(idempotencyKey)
         )
     }
     
-    suspend fun getTransactions(page: Int = 1, pageSize: Int = 20): Result<PageResponse<TransactionDto>> {
+    suspend fun getTransactions(page: Int = 0, pageSize: Int = 20): Result<TransactionListResponse> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Get,
-            path = "/transactions/?page=$page&pageSize=$pageSize"
+            path = "/transactions/?skip=$page&limit=$pageSize"
         )
     }
     
@@ -344,10 +364,10 @@ class ApiClient {
         )
     }
     
-    suspend fun getAccountTransactions(accountId: String, page: Int = 1, pageSize: Int = 20): Result<PageResponse<TransactionDto>> {
+    suspend fun getAccountTransactions(accountId: String, page: Int = 0, pageSize: Int = 20): Result<TransactionListResponse> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Get,
-            path = "/transactions/account/$accountId?page=$page&pageSize=$pageSize"
+            path = "/transactions/account/$accountId?skip=$page&limit=$pageSize"
         )
     }
     
@@ -361,31 +381,31 @@ class ApiClient {
         )
     }
     
-    suspend fun getSecurityHistory(): Result<List<SecurityEvent>> {
+    suspend fun getSecurityHistory(userId: String, limit: Int = 50): Result<List<Map<String, Any>>> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Get,
-            path = "/telemetry/security/history"
+            path = "/telemetry/security/history?user_id=$userId&limit=$limit"
         )
     }
     
-    suspend fun getUserDevices(): Result<List<DeviceInfo>> {
+    suspend fun getUserDevices(userId: String): Result<List<Map<String, Any>>> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Get,
-            path = "/telemetry/devices"
+            path = "/telemetry/devices?user_id=$userId"
         )
     }
     
-    suspend fun revokeDevice(deviceId: String): Result<Unit> {
+    suspend fun revokeDevice(userId: String, deviceId: String): Result<Unit> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Delete,
-            path = "/telemetry/devices/$deviceId"
+            path = "/telemetry/devices/$deviceId?user_id=$userId"
         )
     }
     
-    suspend fun trustDevice(deviceId: String): Result<Unit> {
+    suspend fun trustDevice(userId: String, deviceId: String): Result<Unit> {
         return makeAuthenticatedRequest(
             method = HttpMethod.Post,
-            path = "/telemetry/devices/$deviceId/trust"
+            path = "/telemetry/devices/$deviceId/trust?user_id=$userId"
         )
     }
     
