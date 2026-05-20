@@ -67,6 +67,13 @@ fun HomeScreen(
     
     // Заглушка для транзакций (будет загружаться с сервера)
     val transactions = listOf<TransactionItem>()
+    
+    // Получаем имя для отображения - используем имя первого счета если есть счета
+    val displayName = if (accounts.isNotEmpty()) {
+        accounts.first().accountName
+    } else {
+        username.ifBlank { "Пользователь" }
+    }
 
     Scaffold(
         topBar = {
@@ -130,7 +137,7 @@ fun HomeScreen(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Добрый день, ${username.ifBlank { "Пользователь" }}!",
+                    text = "Добрый день, ${displayName}!",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )

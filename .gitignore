@@ -1,44 +1,71 @@
+```
+# Kotlin/Android build artifacts
 *.class
 *.jar
 *.war
-*.ear
-*.zip
-*.tar.gz
-target/
+*.aar
+
+# Gradle
 .gradle/
-.DS_Store
-Thumbs.db
-*.log
-*.tmp
-*.swp
-.vscode/
+build/
+app/build/
+
+# Android
+*.apk
+*.ap_
+local.properties
+captures/
+.externalNativeBuild
+
+# IDE
 .idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Dependencies
+.libs/
+
+# Logs
+*.log
+
+# Environment
 .env
 .env.local
 *.env.*
-node_modules/
+
+# Python (if any Python scripts in project)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
 venv/
 .venv/
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-coverage/
-htmlcov/
-.coverage
-*.pyc
+.env/
+
+# Node.js (if any web components)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Compiled Binary Files
 *.o
 *.obj
 *.so
 *.a
 *.dll
+*.dylib
 *.exe
 *.out
-dist/
-build/
-*.swp
-*.swo
-*.tmp
+
+# Compressed files
+*.zip
 *.gz
+*.tar
+*.tgz
 *.bz2
 *.xz
 *.7z
@@ -53,16 +80,17 @@ build/
 *.Z
 *.lz
 *.lzo
-*.tar
-*.bz2
-*.xz
 *.tar.gz
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-*.png
-*.jpg
-*.jpeg
-*.bmp
-*.gif
-*.webm
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+```
