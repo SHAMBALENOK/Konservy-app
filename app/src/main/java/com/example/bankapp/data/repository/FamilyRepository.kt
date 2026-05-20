@@ -368,8 +368,11 @@ class FamilyRepository(private val context: Context) {
     suspend fun loginWithFido(): Result<TokenResponse> {
         _isLoading.value = true
         return try {
+            // Получаем userId из текущего пользователя
+            val userId = _currentUsername.value ?: return Result.failure(Exception("User not logged in"))
+            
             // Шаг 1: Получаем challenge
-            val challengeResult = apiClient.getFidoLoginChallenge()
+            val challengeResult = apiClient.getFidoLoginChallenge(userId)
             if (challengeResult.isFailure) return Result.failure(challengeResult.exceptionOrNull()!!)
             
             // Здесь должна быть логика FIDO2 аутентификации через биометрию устройства
