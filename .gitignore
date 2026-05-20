@@ -1,1 +1,20 @@
-Nothing should be ignored in this case, as the only change is a modification to a Kotlin source file (.kt), which is a source code file that should not be ignored. The current .gitignore appears to be empty, and no new ignore rules are needed based on the provided file changes.
+```
+# Compiled and build artifacts
+*.class
+*.o
+*.obj
+*.out
+build/
+# Dependencies
+.gradle/
+# Logs and temp files
+*.log
+*.tmp
+# Environment
+.env
+.env.local
+*.env.*
+# Editors
+.vscode/
+.idea/
+```

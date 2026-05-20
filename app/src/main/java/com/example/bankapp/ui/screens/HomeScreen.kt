@@ -24,6 +24,7 @@ import com.example.bankapp.ui.theme.WarningOrange
 
 data class AccountCard(
     val id: Int,
+    val accountId: String,
     val accountName: String,
     val accountNumber: String,
     val balance: Double,
@@ -44,7 +45,8 @@ data class TransactionItem(
 @Composable
 fun HomeScreen(
     repository: FamilyRepository,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onDeposit: () -> Unit = {}
 ) {
     // Наблюдаем за состоянием счетов и именем пользователя
     val accountsState by repository.accounts.collectAsState()
@@ -54,6 +56,7 @@ fun HomeScreen(
     val accounts = accountsState.map { account ->
         AccountCard(
             id = account.id,
+            accountId = account.accountId.toString(),
             accountName = account.accountName,
             accountNumber = account.accountNumber,
             balance = account.balance,
@@ -146,10 +149,10 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    QuickActionButton(icon = Icons.Outlined.Send, label = "Перевести")
-                    QuickActionButton(icon = Icons.Outlined.Add, label = "Пополнить")
-                    QuickActionButton(icon = Icons.Outlined.Receipt, label = "Платёж")
-                    QuickActionButton(icon = Icons.Outlined.MoreHoriz, label = "Ещё")
+                    QuickActionButton(icon = Icons.Outlined.Send, label = "Перевести", onClick = {})
+                    QuickActionButton(icon = Icons.Outlined.Add, label = "Пополнить", onClick = onDeposit)
+                    QuickActionButton(icon = Icons.Outlined.Receipt, label = "Платёж", onClick = {})
+                    QuickActionButton(icon = Icons.Outlined.MoreHoriz, label = "Ещё", onClick = {})
                 }
             }
 
@@ -196,7 +199,11 @@ fun HomeScreen(
 }
 
 @Composable
-fun QuickActionButton(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String) {
+fun QuickActionButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector, 
+    label: String,
+    onClick: () -> Unit = {}
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.width(80.dp)
@@ -206,7 +213,7 @@ fun QuickActionButton(icon: androidx.compose.ui.graphics.vector.ImageVector, lab
                 .size(56.dp)
                 .clip(RoundedCornerShape(16.dp)),
             color = MaterialTheme.colorScheme.primaryContainer,
-            onClick = { }
+            onClick = onClick
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(

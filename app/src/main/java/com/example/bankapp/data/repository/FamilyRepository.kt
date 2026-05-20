@@ -302,6 +302,7 @@ class FamilyRepository(private val context: Context) {
         return member.accounts.mapIndexed { index, accountId ->
             ExtendedAccount(
                 id = accountId.toIntOrNull() ?: index,
+                accountId = "test-account-id-$index",
                 accountName = "${member.relation} - Счёт ${index + 1}",
                 accountNumber = "**** ${1000 + index}",
                 balance = 50000.0 * (index + 1),
@@ -405,6 +406,7 @@ class FamilyRepository(private val context: Context) {
                 _accounts.value = accountsDto.mapIndexed { index, dto ->
                     ExtendedAccount(
                         id = dto.id,
+                        accountId = dto.accountId,
                         accountName = "Счёт ${index + 1}",
                         accountNumber = dto.accountNumber,
                         balance = dto.balance.toDoubleOrNull() ?: 0.0,
