@@ -68,12 +68,8 @@ fun HomeScreen(
     // Заглушка для транзакций (будет загружаться с сервера)
     val transactions = listOf<TransactionItem>()
     
-    // Получаем имя для отображения - используем имя первого счета если есть счета
-    val displayName = if (accounts.isNotEmpty()) {
-        accounts.first().accountName
-    } else {
-        username.ifBlank { "Пользователь" }
-    }
+    // Получаем имя для отображения - используем имя пользователя
+    val displayName = username.ifBlank { "Пользователь" }
 
     Scaffold(
         topBar = {
@@ -108,8 +104,8 @@ fun HomeScreen(
                 NavigationBarItem(
                     selected = false,
                     onClick = { },
-                    icon = { Icon(Icons.Outlined.AccountBalance, contentDescription = null) },
-                    label = { Text("Платежи") }
+                    icon = { Icon(Icons.Outlined.People, contentDescription = null) },
+                    label = { Text("Семья") }
                 )
                 NavigationBarItem(
                     selected = false,
