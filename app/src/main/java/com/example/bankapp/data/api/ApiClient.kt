@@ -10,6 +10,7 @@ import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.util.*
 import kotlinx.serialization.json.Json
 
 /**
@@ -129,11 +130,11 @@ class ApiClient {
             val response = client.post("${ApiConfig.baseUrl}${ApiConfig.BASE_PATH}/auth/login") {
                 contentType(ContentType.Application.FormUrlEncoded)
                 setBody(
-                    Parameters.build {
-                        append("username", request.username)
-                        append("password", request.password)
-                        append("grant_type", "password")
-                    }
+                    listOf(
+                        "username" to request.username,
+                        "password" to request.password,
+                        "grant_type" to "password"
+                    ).formUrlEncode()
                 )
             }
             if (response.status.isSuccess()) {
