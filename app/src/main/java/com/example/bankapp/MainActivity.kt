@@ -16,15 +16,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -50,6 +55,9 @@ import com.example.bankapp.ui.screens.family.FamilyScreen
 import com.example.bankapp.ui.screens.help.HelpScreen
 import com.example.bankapp.ui.screens.settings.SettingsScreen
 import com.example.bankapp.ui.theme.BankAppTheme
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -207,11 +215,30 @@ fun mainNavigation(
     onOpenSettings: () -> Unit,
     onLogout: () -> Unit
 ) {
+    val context = LocalContext.current
+    var showDepositDialog by remember { mutableStateOf(false) }
+    
     when (selectedTab) {
-        0 -> HomeScreen(repository = repository, onOpenSettings = onOpenSettings)
+        0 -> HomeScreen(
+            repository = repository, 
+            onOpenSettings = onOpenSettings,
+            onDeposit = { showDepositDialog = true }
+        )
         1 -> FamilyScreen(repository = repository)
         2 -> HelpScreen()
         3 -> profileScreen(repository = repository, onOpenSettings = onOpenSettings, onLogout = onLogout)
+    }
+    
+    // Диалог пополнения счёта
+    if (showDepositDialog) {
+        DepositDialog(
+            repository = repository,
+            onDismiss = { showDepositDialog = false },
+            onDepositSuccess = { 
+                showDepositDialog = false
+                // Обновляем данные счетов после успешного пополнения
+            }
+        )
     }
 }
 
@@ -277,4 +304,126 @@ fun profileScreen(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DepositDialog(
+    repository: FamilyRepository,
+    onDismiss: () -> Unit,
+    onDepositSuccess: () -> Unit
+) {
+    var amount by remember { mutableStateOf("10000") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showSuccess by remember { mutableStateOf(false) }
+    
+    val accounts by repository.accounts.collectAsState()
+    val selectedAccount = accounts.firstOrNull()
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Пополнение счёта") },
+        text = {
+            Column {
+                if (selectedAccount != null) {
+                    Text(
+                        text = "Счёт: ${selectedAccount.accountName}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                
+                OutlinedTextField(
+                    value = amount,
+                    onValueChange = { amount = it.filter { char -> char.isDigit() || char == '.' } },
+                    label = { Text("Сумма (RUB)") },
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.ui.text.input.KeyboardOptions(
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = errorMessage != null
+                )
+                
+                if (errorMessage != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = errorMessage!!,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                
+                if (showSuccess) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "✓ Успешно пополнено на $amount RUB!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (selectedAccount == null) {
+                        errorMessage = "Счёт не найден"
+                        return@Button
+                    }
+                    
+                    val amountValue = amount.toDoubleOrNull()
+                    if (amountValue == null || amountValue <= 0) {
+                        errorMessage = "Введите корректную сумму"
+                        return@Button
+                    }
+                    
+                    isLoading = true
+                    errorMessage = null
+                    
+                    // Запускаем пополнение в фоновом режиме
+                    GlobalScope.launch {
+                        try {
+                            val result = repository.deposit(
+                                accountId = selectedAccount.accountId,
+                                amount = amountValue,
+                                description = "Тестовое пополнение на $amountValue RUB"
+                            )
+                            
+                            if (result.isSuccess) {
+                                showSuccess = true
+                                delay(1500)
+                                onDepositSuccess()
+                            } else {
+                                errorMessage = result.exceptionOrNull()?.message ?: "Ошибка пополнения"
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = e.message ?: "Неизвестная ошибка"
+                        } finally {
+                            isLoading = false
+                        }
+                    }
+                },
+                enabled = !isLoading && !showSuccess
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Пополнить")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isLoading
+            ) {
+                Text("Отмена")
+            }
+        }
+    )
 }

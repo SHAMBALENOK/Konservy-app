@@ -89,6 +89,7 @@ data class SecuritySettings(
  */
 data class ExtendedAccount(
     val id: Int,
+    val accountId: String,
     val accountName: String,
     val accountNumber: String,
     val balance: Double,
