@@ -401,10 +401,10 @@ class FamilyRepository(private val context: Context) {
                 val accountsDto = accountsResult.getOrNull()?.items ?: emptyList()
                 _accounts.value = accountsDto.mapIndexed { index, dto ->
                     ExtendedAccount(
-                        id = dto.id.toIntOrNull() ?: index,
+                        id = dto.id,
                         accountName = "Счёт ${index + 1}",
                         accountNumber = dto.accountNumber,
-                        balance = dto.balance,
+                        balance = dto.balance.toDoubleOrNull() ?: 0.0,
                         currency = dto.currency,
                         cardColor = when (index % 3) {
                             0 -> Color(0xFF1976D2)
@@ -422,10 +422,12 @@ class FamilyRepository(private val context: Context) {
         }
     }
     
-    suspend fun createAccount(currency: String = "RUB", initialDeposit: Double? = null): Result<AccountDto> {
+    suspend fun createAccount(currency: String = "USD", initialDeposit: Double? = null): Result<AccountDto> {
         _isLoading.value = true
         return try {
-            val result = apiClient.createAccount(CreateAccountRequest(currency, initialDeposit))
+            val userId = _currentUsername.value // Используем username как user_id
+            val initialBalance = initialDeposit?.toString() ?: "0.00"
+            val result = apiClient.createAccount(userId, currency, initialBalance)
             if (result.isSuccess) {
                 loadUserAccounts()
             }
@@ -447,7 +449,7 @@ class FamilyRepository(private val context: Context) {
         _isLoading.value = true
         return try {
             val idempotencyKey = UUID.randomUUID().toString()
-            apiClient.deposit(accountId, amount, idempotencyKey, description)
+            apiClient.deposit(accountId, amount.toString(), idempotencyKey, description)
         } finally {
             _isLoading.value = false
         }
@@ -461,7 +463,22 @@ class FamilyRepository(private val context: Context) {
         _isLoading.value = true
         return try {
             val idempotencyKey = UUID.randomUUID().toString()
-            apiClient.withdraw(accountId, amount, idempotencyKey, description)
+            apiClient.withdraw(accountId, amount.toString(), idempotencyKey, description)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    suspend fun transfer(
+        toAccountId: String,
+        amount: Double,
+        description: String? = null
+    ): Result<TransactionDto> {
+        _isLoading.value = true
+        return try {
+            val idempotencyKey = UUID.randomUUID().toString()
+            val currentUserId = _currentUsername.value // Используем username как user_id
+            apiClient.transfer(toAccountId, amount, idempotencyKey, description, currentUserId)
         } finally {
             _isLoading.value = false
         }
@@ -469,23 +486,7 @@ class FamilyRepository(private val context: Context) {
     
     // ==================== TRANSACTIONS ====================
     
-    suspend fun transfer(
-        fromAccountId: String,
-        toAccountId: String,
-        amount: Double,
-        description: String? = null
-    ): Result<TransactionDto> {
-        _isLoading.value = true
-        return try {
-            val currentUserId = _currentUser.value?.id ?: "unknown"
-            val idempotencyKey = UUID.randomUUID().toString()
-            apiClient.transfer(fromAccountId, toAccountId, amount, idempotencyKey, description, currentUserId)
-        } finally {
-            _isLoading.value = false
-        }
-    }
-    
-    suspend fun loadTransactions(page: Int = 1, pageSize: Int = 20) {
+    suspend fun loadTransactions(page: Int = 0, pageSize: Int = 20) {
         _isLoading.value = true
         try {
             val result = apiClient.getTransactions(page, pageSize)
@@ -500,20 +501,24 @@ class FamilyRepository(private val context: Context) {
     
     // ==================== SECURITY & TELEMETRY ====================
     
-    suspend fun getSecurityHistory(): Result<List<SecurityEvent>> {
-        return apiClient.getSecurityHistory()
+    suspend fun getSecurityHistory(): Result<List<Map<String, Any>>> {
+        val userId = _currentUsername.value
+        return apiClient.getSecurityHistory(userId)
     }
     
-    suspend fun getUserDevices(): Result<List<DeviceInfo>> {
-        return apiClient.getUserDevices()
+    suspend fun getUserDevices(): Result<List<Map<String, Any>>> {
+        val userId = _currentUsername.value
+        return apiClient.getUserDevices(userId)
     }
     
     suspend fun revokeDevice(deviceId: String): Result<Unit> {
-        return apiClient.revokeDevice(deviceId)
+        val userId = _currentUsername.value
+        return apiClient.revokeDevice(userId, deviceId)
     }
     
     suspend fun trustDevice(deviceId: String): Result<Unit> {
-        return apiClient.trustDevice(deviceId)
+        val userId = _currentUsername.value
+        return apiClient.trustDevice(userId, deviceId)
     }
     
     suspend fun collectTelemetry(data: Map<String, Any>): Result<Unit> {

@@ -118,18 +118,37 @@ data class UserData(
 )
 
 /**
- * Модель счёта
+ * Модель счёта - соответствует серверной AccountResponse
  */
 @Serializable
 data class AccountDto(
-    val id: String,
+    val id: Int,
+    @SerialName("account_id")
+    val accountId: String,
+    @SerialName("user_id")
     val userId: String,
+    @SerialName("account_number")
     val accountNumber: String,
-    val balance: Double,
-    val currency: String,
-    val status: String,
+    val balance: String,
+    @SerialName("is_active")
+    val isActive: Boolean = true,
+    val currency: String = "USD",
+    @SerialName("created_at")
     val createdAt: String,
+    @SerialName("updated_at")
     val updatedAt: String? = null
+)
+
+/**
+ * Ответ списка счетов с пагинацией
+ */
+@Serializable
+data class AccountListResponse(
+    val items: List<AccountDto>,
+    val total: Int,
+    val page: Int,
+    @SerialName("page_size")
+    val pageSize: Int
 )
 
 /**
@@ -151,32 +170,47 @@ data class AmountRequest(
 )
 
 /**
- * Модель транзакции
+ * Модель транзакции - соответствует серверной TransactionResponse
  */
 @Serializable
 data class TransactionDto(
-    val id: String,
+    val id: Int,
+    @SerialName("transaction_id")
+    val transactionId: String,
     val type: String,
-    val fromAccountId: String?,
-    val toAccountId: String?,
-    val amount: Double,
-    val currency: String,
     val status: String,
-    val description: String?,
-    val createdAt: String
+    @SerialName("source_account_id")
+    val sourceAccountId: String?,
+    @SerialName("destination_account_id")
+    val destinationAccountId: String?,
+    val amount: String,
+    val currency: String = "USD",
+    val description: String? = null,
+    val reference: String? = null,
+    @SerialName("idempotency_key")
+    val idempotencyKey: String? = null,
+    @SerialName("failure_reason")
+    val failureReason: String? = null,
+    @SerialName("created_at")
+    val createdAt: String,
+    @SerialName("updated_at")
+    val updatedAt: String,
+    @SerialName("processed_at")
+    val processedAt: String? = null
 )
 
 /**
- * Запрос на перевод
+ * Запрос на перевод - соответствует серверному TransferRequest
+ * Сервер определяет source account из authenticated user
  */
 @Serializable
 data class TransferRequest(
-    @SerialName("from_account_id")
-    val fromAccountId: String,
-    @SerialName("to_account_id")
-    val toAccountId: String,
+    @SerialName("destination_account_id")
+    val destinationAccountId: String,
     val amount: Double,
-    val description: String? = null
+    val currency: String? = null,
+    val description: String? = null,
+    val reference: String? = null
 )
 
 /**
@@ -223,14 +257,28 @@ data class FidoCredential(
 )
 
 /**
- * Страница пагинации
+ * Ответ списка транзакций с пагинацией
+ */
+@Serializable
+data class TransactionListResponse(
+    val items: List<TransactionDto>,
+    val total: Int,
+    val page: Int,
+    @SerialName("page_size")
+    val pageSize: Int
+)
+
+/**
+ * Страница пагинации (устаревшая модель)
  */
 @Serializable
 data class PageResponse<T>(
     val items: List<T>,
     val total: Int,
     val page: Int,
+    @SerialName("pageSize")
     val pageSize: Int,
+    @SerialName("totalPages")
     val totalPages: Int
 )
 
