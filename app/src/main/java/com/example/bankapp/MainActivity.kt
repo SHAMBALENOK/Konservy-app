@@ -41,7 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.bankapp.data.api.ApiClientProvider
 import com.example.bankapp.data.api.ApiConfig
@@ -238,6 +238,7 @@ fun mainNavigation(
             onDepositSuccess = { 
                 showDepositDialog = false
                 // Обновляем данные счетов после успешного пополнения
+                // (теперь это делается внутри repository.deposit())
             }
         )
     }
@@ -341,7 +342,7 @@ fun DepositDialog(
                     label = { Text("Сумма (RUB)") },
                     singleLine = true,
                     keyboardOptions = androidx.compose.ui.text.input.KeyboardOptions(
-                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                        keyboardType = KeyboardType.Number
                     ),
                     modifier = Modifier.fillMaxWidth(),
                     isError = errorMessage != null

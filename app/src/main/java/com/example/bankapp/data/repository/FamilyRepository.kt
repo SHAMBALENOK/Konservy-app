@@ -73,6 +73,10 @@ class FamilyRepository(private val context: Context) {
     // Счета пользователя
     private val _accounts = MutableStateFlow<List<ExtendedAccount>>(emptyList())
     val accounts: StateFlow<List<ExtendedAccount>> = _accounts.asStateFlow()
+    
+    // Текущий выбранный счет (для операций)
+    private val _currentAccountId = MutableStateFlow<String?>(null)
+    val currentAccountId: StateFlow<String?> = _currentAccountId.asStateFlow()
 
     init {
         // Инициализация тестовыми данными
@@ -407,7 +411,7 @@ class FamilyRepository(private val context: Context) {
                     ExtendedAccount(
                         id = dto.id,
                         accountId = dto.accountId,
-                        accountName = "Счёт ${index + 1}",
+                        accountName = "Счёт ${index + 1} (${dto.accountNumber.takeLast(4)})",
                         accountNumber = dto.accountNumber,
                         balance = dto.balance.toDoubleOrNull() ?: 0.0,
                         currency = dto.currency,
@@ -420,6 +424,10 @@ class FamilyRepository(private val context: Context) {
                         isJoint = false,
                         spendingLimit = null
                     )
+                }
+                // Устанавливаем первый счет как текущий для операций
+                if (accountsDto.isNotEmpty()) {
+                    _currentAccountId.value = accountsDto.first().accountId
                 }
             }
         } finally {
@@ -454,7 +462,12 @@ class FamilyRepository(private val context: Context) {
         _isLoading.value = true
         return try {
             val idempotencyKey = UUID.randomUUID().toString()
-            apiClient.deposit(accountId, amount.toString(), idempotencyKey, description)
+            val result = apiClient.deposit(accountId, amount.toString(), idempotencyKey, description)
+            // После успешного пополнения обновляем список счетов
+            if (result.isSuccess) {
+                loadUserAccounts()
+            }
+            result
         } finally {
             _isLoading.value = false
         }
